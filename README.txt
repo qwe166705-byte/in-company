@@ -1,0 +1,4 @@
+
+0107
+machine_eidt改壞了
+編輯出現UnboundLocalError

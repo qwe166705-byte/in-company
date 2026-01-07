@@ -90,6 +90,25 @@
                     </div>
                 </div>
                 <div class="layui-form-item">
+                    <label for="MACHINE_BUILDING" class="layui-form-label">棟別</label>
+                    <div class="layui-input-inline">
+                        <select id="MACHINE_BUILDING" name="MACHINE_BUILDING">
+                        <option value="A#1" selected>A#1</option>
+                        <option value="A#2" selected>A#2</option>
+                        <option value="B#1" selected>B#1</option>
+                        <option value="C#1" selected>C#1</option>
+                        <option value="E#1" selected>E#1</option>
+                        <option value="E#2" selected>E#2</option>
+                        <option value="E#3" selected>E#3</option>
+                        <option value="E#4" selected>E#4</option>
+                        <option value="K#1" selected>K#1</option>
+                        <option value="K#2" selected>K#2</option>
+                        <option value="K#3" selected>K#3</option>
+                        <option value="K#4" selected>K#4</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
                     <label for="is_65_upload" class="layui-form-label">是否65上传</label>
                     <div class="layui-input-inline">
                         <select id="is_65_upload" name="is_65_upload">
@@ -119,19 +138,19 @@
                 <div class="layui-form-item">
                     <label for="read_interval" class="layui-form-label">间隔时间</label>
                     <div class="layui-input-inline">
-                        <input type="text" id="read_interval" name="read_interval" autocomplete="off" class="layui-input">
+                        <input type="text" id="read_interval" name="read_interval" autocomplete="off" class="layui-input" value="10">
                     </div>
                 </div>
                 <div class="layui-form-item">
                     <label for="read_time_out" class="layui-form-label">运算超时</label>
                     <div class="layui-input-inline">
-                        <input type="text" id="read_time_out" name="read_time_out" autocomplete="off" class="layui-input">
+                        <input type="text" id="read_time_out" name="read_time_out" autocomplete="off" class="layui-input" value="360">
                     </div>
                 </div>
                 <div class="layui-form-item">
                     <label for="percentage" class="layui-form-label">时间</label>
                     <div class="layui-input-inline">
-                        <input type="text" id="percentage" name="percentage" autocomplete="off" class="layui-input"></div>
+                        <input type="text" id="percentage" name="percentage" autocomplete="off" class="layui-input" value="10%"></div>
                 </div>
                 <div class="layui-form-item">
                     <button class="layui-btn" lay-filter="add" lay-submit="">增加</button>

@@ -78,6 +78,7 @@
                             <th style="display: none;">时间</th>
                             <th>65上传</th>
                             <th>稼动率</th>
+                            <th>棟別</th>
                             <th>版本信息</th>
                             {% if g.authority == '3' or g.authority == '2' %}
                                 <th>状态</th>
@@ -87,7 +88,25 @@
                         </thead>
                         <tbody>
                         {% for value in machine_info %}
-                            <tr>
+                            <tr
+                                data-machine-pm="{{ value['MACHINE_PM'] or '' }}"
+                                data-machine-name="{{ value['MACHINE_NAME'] or '' }}"
+                                data-machine-ip="{{ value['MACHINE_IP'] or '' }}"
+                                data-machine-port="{{ value['MACHINE_PORT'] or '' }}"
+                                data-ipc-ip="{{ value['IPC_IP'] or '' }}"
+                                data-terminal-id="{{ value['TERMINAL_ID'] or '' }}"
+                                data-source-name="{{ value['SOURCE_NAME'] or '' }}"
+                                data-machine-type="{{ value['MACHINE_TYPE'] or '' }}"
+                                data-data-cleaning-flag="{{ value['DATA_CLEANING_FLAG'] or '' }}"
+                                data-read-interval="{{ value['READ_INTERVAL'] or '' }}"
+                                data-read-time-out="{{ value['READ_TIME_OUT'] or '' }}"
+                                data-percentage="{{ value['PERCENTAGE'] or '' }}"
+                                data-is-65-upload="{{ value['IS_65_UPLOAD'] or '' }}"
+                                data-is-upload-working-rate="{{ value['IS_UPLOAD_WORKING_RATE'] or '' }}"
+                                data-machine-building="{{ value['MACHINE_BUILDING'] or '' }}"
+                                data-version="{{ value['VERSION'] or '' }}"
+                            >
+
                                 <td>
                                     <input type="checkbox" name="pm" value="{{ value['MACHINE_PM'] }}"
                                            lay-skin="primary">
@@ -132,6 +151,8 @@
                                     {{ '' }}{% endif %}</td>
                                 <td>{% if value['IS_UPLOAD_WORKING_RATE'] is not none %}{{ value['IS_UPLOAD_WORKING_RATE'] }}{% else %}
                                     {{ '' }}{% endif %}</td>
+                                <td>{% if value['MACHINE_BUILDING'] is not none %}{{ value['MACHINE_BUILDING'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>    
                                 <td>{% if value['VERSION'] is not none %}{{ value['VERSION'] }}{% else %}
                                     {{ '' }}{% endif %}</td>
                                 {% if g.authority == '3' or g.authority == '2' %}
@@ -483,21 +504,22 @@
         var row = editButton.closest('tr');
 
         // 获取当前行的各列数据
-        var machine_pm = row.cells[1].innerText;
-        var machine_name = row.cells[2].innerText;
-        var machine_ip = row.cells[3].innerText;
-        var machine_port = row.cells[4].innerText;
-        var ipc_ip = row.cells[5].innerText;
-        var terminal_id = row.cells[6].innerText;
-        var source_name = row.cells[7].innerText;
-        var machine_type = row.cells[8].innerText;
-        var data_cleaning_flag = row.cells[9].innerText;
-        var read_interval = row.cells[10].innerText;
-        var read_time_out = row.cells[11].innerText;
-        var percentage = row.cells[12].innerText;
-        var is_65_upload = row.cells[13].innerText;
-        var is_upload_working_rate = row.cells[14].innerText;
-        var version = row.cells[15].innerText;
+        var machine_pm = row.dataset.machinePm;
+        var machine_name = row.dataset.machineName;
+        var machine_ip = row.dataset.machineIp;
+        var machine_port = row.dataset.machinePort;
+        var ipc_ip = row.dataset.ipcIp;
+        var terminal_id = row.dataset.terminalId;
+        var source_name = row.dataset.sourceName;
+        var machine_type = row.dataset.machineType;
+        var data_cleaning_flag = row.dataset.dataCleaningFlag;
+        var read_interval = row.dataset.readInterval;
+        var read_time_out = row.dataset.readTimeOut;
+        var percentage = row.dataset.percentage;
+        var is_65_upload = row.dataset.is65Upload;
+        var is_upload_working_rate = row.dataset.isUploadWorkingRate;
+        var machine_building = row.dataset.machineBuilding;
+        var version = row.dataset.version;
 
         // 创建查询字符串，传递需要的数据
         var url = '/machine_edit?' +
@@ -515,6 +537,7 @@
             '&percentage=' + encodeURIComponent(percentage) +
             '&is_65_upload=' + encodeURIComponent(is_65_upload) +
             '&is_upload_working_rate=' + encodeURIComponent(is_upload_working_rate) +
+            '&machine_building=' + encodeURIComponent(machine_building) +
             '&version=' + encodeURIComponent(version);
 
         console.log(url);

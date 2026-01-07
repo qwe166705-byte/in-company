@@ -34,7 +34,7 @@
 <body>
     <div class="layui-fluid">
         <div class="layui-row">
-            <form class="layui-form">
+            <form class="layui-form" method="post"> 
                 <div class="layui-form-item">
                     <label for="machine_name" class="layui-form-label">机台名称</label>
                     <div class="layui-input-inline">
@@ -71,16 +71,39 @@
                     <label for="machine_type" class="layui-form-label">类型</label>
                     <div class="layui-input-inline">
                         <select id="machine_type" name="machine_type">
-            <option value="LOG" {% if machine_type == 'LOG' %}selected{% endif %}>LOG</option>
-            <option value="DB" {% if machine_type == 'DB' %}selected{% endif %}>DB</option>
-            <option value="前后相机" {% if machine_type == '前后相机' %}selected{% endif %}>前后相机</option>
-            <option value="前后相机DCN"  {% if machine_type == '前后相机DCN' %}selected{% endif %}>前后相机DCN</option>
-            <option value="前或后相机" {% if machine_type == '前或后相机' %}selected{% endif %}>前或后相机</option>
-            <option value="相机LOG" {% if machine_type == '相机LOG' %}selected{% endif %}>相机LOG</option>
-            <option value="AOBAO" {% if machine_type == 'AOBAO' %}selected{% endif %}>AOBAO</option>
-        </select>
+                            <option value="LOG" {% if machine_type == 'LOG' %}selected{% endif %}>LOG</option>
+                            <option value="DB" {% if machine_type == 'DB' %}selected{% endif %}>DB</option>
+                            <option value="前后相机" {% if machine_type == '前后相机' %}selected{% endif %}>前后相机</option>
+                            <option value="前后相机DCN"  {% if machine_type == '前后相机DCN' %}selected{% endif %}>前后相机DCN</option>
+                            <option value="前或后相机" {% if machine_type == '前或后相机' %}selected{% endif %}>前或后相机</option>
+                            <option value="相机LOG" {% if machine_type == '相机LOG' %}selected{% endif %}>相机LOG</option>
+                            <option value="AOBAO" {% if machine_type == 'AOBAO' %}selected{% endif %}>AOBAO</option>
+                        </select>
                     </div>
                 </div>
+
+                <div class="layui-form-item">
+                    <label for="machine_building" class="layui-form-label">棟別</label>
+                    <div class="layui-input-inline">
+                        <select id="machine_building" name="machine_building">
+                            <option value="A#1" {% if machine_building == 'A#1' %}selected{% endif %}>A#1</option>
+                            <option value="A#2" {% if machine_building == 'A#2' %}selected{% endif %}>A#2</option>
+                            <option value="B#1" {% if machine_building == 'B#1' %}selected{% endif %}>B#1</option>
+                            <option value="C#1" {% if machine_building == 'C#1' %}selected{% endif %}>C#1</option>
+                            <option value="E#1" {% if machine_building == 'E#1' %}selected{% endif %}>E#1</option>
+                            <option value="E#2" {% if machine_building == 'E#2' %}selected{% endif %}>E#2</option>
+                            <option value="E#3" {% if machine_building == 'E#3' %}selected{% endif %}>E#3</option>
+                            <option value="E#4" {% if machine_building == 'E#4' %}selected{% endif %}>E#4</option>
+                            <option value="K#1" {% if machine_building == 'K#1' %}selected{% endif %}>K#1</option>
+                            <option value="K#2" {% if machine_building == 'K#2' %}selected{% endif %}>K#2</option>
+                            <option value="K#3" {% if machine_building == 'K#3' %}selected{% endif %}>K#3</option>
+                            <option value="K#4" {% if machine_building == 'K#4' %}selected{% endif %}>K#4</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                
             <div class="layui-form-item">
                 <label for="is_65_upload" class="layui-form-label">是否65上传</label>
                 <div class="layui-input-inline">

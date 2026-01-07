@@ -291,10 +291,11 @@ def machine_add():
 
 # 机台编辑页面
 @app.route('/machine_edit', methods=['GET'])  # 编辑机器页面
+
 def machine_edit():
     # 获取 URL 查询参数中的各个值
     machine_pm = request.args.get('machine_pm')
-    machine_name = request.args.get('machine_name').strip()
+    machine_name = (request.args.get('machine_name') or '').strip()
     machine_ip = request.args.get('machine_ip')
     machine_port = request.args.get('machine_port')
     ipc_ip = request.args.get('ipc_ip')
@@ -308,7 +309,8 @@ def machine_edit():
     is_65_upload = request.args.get('is_65_upload')
     is_upload_working_rate = request.args.get('is_upload_working_rate')
     version = request.args.get('version')
-
+    machine_building = request.args.get('machine_building')  # 0106 修復資料 新增欄位
+    
     # 获取配置的服务器 URL
     server_url = current_app.config['SERVER_URL']
     update_machine_info_url = server_url + '/update_machine_info'
@@ -330,6 +332,7 @@ def machine_edit():
                            is_65_upload=is_65_upload,
                            is_upload_working_rate=is_upload_working_rate,
                            version=version,
+                           machine_building=machine_building,# 0106 修復資料 新增欄位
                            update_machine_info_url=update_machine_info_url)
 
 
@@ -1299,4 +1302,4 @@ def download():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5487, debug=True)
+    app.run(host='0.0.0.0', port=7414, debug=True, use_reloader=False)

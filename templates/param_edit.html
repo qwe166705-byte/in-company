@@ -66,10 +66,15 @@
                     <div class="layui-input-inline">
                         <select id="read_bit" name="read_bit">
                             <option value="无" {% if read_bit == '无' %}selected{% endif %}>无</option>
-                            <option value="INT_16" {% if read_bit == 'INT_16' %}selected{% endif %}>INT_16</option>
-                            <option value="INT_32" {% if read_bit == 'INT_32' %}selected{% endif %}>INT_32</option>
-                            <option value="FLOAT_16" {% if read_bit == 'FLOAT_16' %}selected{% endif %}>FLOAT_16</option>
-                            <option value="FLOAT_32" {% if read_bit == 'FLOAT_32' %}selected{% endif %}>FLOAT_32</option>
+                            <option value="INT16" {% if read_bit == 'INT16' %}selected{% endif %}>INT16</option>
+                            <option value="INT32" {% if read_bit == 'INT32' %}selected{% endif %}>INT32</option>
+                            <option value="FLOAT" {% if read_bit == 'FLOAT' %}selected{% endif %}>FLOAT</option>
+                            <option value="BIT" {% if read_bit == 'BIT' %}selected{% endif %}>BIT</option>
+                            <option value="LONG" {% if read_bit == 'LONG' %}selected{% endif %}>LONG</option>
+                            <option value="BCD" {% if read_bit == 'BCD' %}selected{% endif %}>BCD</option>
+                            <option value="BCDNO" {% if read_bit == 'BCDNO' %}selected{% endif %}>BCDNO</option>
+                            <option value="BCD16" {% if read_bit == 'BCD16' %}selected{% endif %}>BCD16</option>
+                            <option value="EMA16" {% if read_bit == 'EMA16' %}selected{% endif %}>EMA16</option>
                         </select>
                     </div>
                 </div>
