@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件浏览器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #fff;
+        }
+        h2 {
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            margin: 20px 0;
+        }
+        input[type="file"] {
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+        .file-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9; /* 背景色为浅灰色，提供更好的对比 */
+            margin-bottom: 20px;
+        }
+        .file-list li {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #ffffff; /* 白色背景增加文件名的对比度 */
+            border-radius: 5px;
+            color: #333; /* 确保文件名的颜色是深色的 */
+        }
+        .file-list li:hover {
+            background-color: #e0e0e0; /* 鼠标悬停时背景色稍微变浅 */
+        }
+        .file-list input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        /* 设置 checkbox 后的文本颜色为黑色 */
+        .file-list li input[type="checkbox"] + span {
+            color: black; /* 确保文件名文本的颜色是黑色 */
+        }
+
+        .btn-back {
+            background-color: #007BFF;
+            margin-top: 20px;
+            text-decoration: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .btn-back:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        // 禁用下载按钮，防止连续点击
+        function disableDownloadButton(event) {
+            var button = document.getElementById('downloadButton');
+            button.disabled = true;  // 禁用下载按钮
+            console.log("表单正在提交...");  // 调试信息
+            setTimeout(function() {
+                button.disabled = false;  // 设置按钮重新启用的时间，防止连续点击
+            }, 3000); // 3秒钟后可以点击
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>IPC程式下载</h1>
+    </header>
+
+    <div class="container">
+        <!-- 文件上传表单 -->
+        <h2>上传文件</h2>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file">
+            <button type="submit">上传</button>
+        </form>
+
+        <!-- 文件选择框 -->
+        <h2>选择要下载的文件</h2>
+        <form action="/download" method="POST" onsubmit="disableDownloadButton(event)">
+            <div class="file-list">
+                <ul>
+                    {% for file in files %}
+                        <li>
+                            <input type="checkbox" name="files" value="{{ file }}">
+                            <span style="color: #45a049;">{{ file }}</span> <!-- 包装文本内容 -->
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <button type="submit" id="downloadButton">下载选中的文件</button>
+        </form>
+
+        <!-- 返回首页按钮 -->
+        <a href="/" class="btn-back">返回首页</a>
+    </div>
+</body>
+</html>

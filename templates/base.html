@@ -1,0 +1,221 @@
+<!doctype html>
+<html class="x-admin-sm">
+<head>
+    <meta charset="UTF-8">
+    <title>IPC-后台维护</title>
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <link rel="icon" href="../static/images/4m1e.png" type="image/x-icon"/>
+    <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <script>
+
+    </script>
+</head>
+<body class="index">
+<!-- 顶部开始 -->
+<div class="container">
+    <div class="logo">
+        <a href="/index">IPC-首页</a></div>
+    <div class="left_open">
+        <a><i title="展开左侧栏" class="iconfont">&#xe699;</i></a>
+    </div>
+
+    <ul class="layui-nav right" lay-filter="">
+        <li class="layui-nav-item">
+            <a href="javascript:;">
+                {% if g.user %}{{ g.user['EMP_NAME'] }}{% else %}Guest{% endif %}
+            </a>
+            <dl class="layui-nav-child">
+                <!-- 二级菜单 -->
+                <dd>
+                    <a href="/logout">退出登录</a></dd>
+            </dl>
+        </li>
+    </ul>
+</div>
+<div class="left-nav">
+    <div id="side-nav">
+        <ul id="nav">
+            <li>
+                <a href="javascript:;">
+                    <i class="iconfont left-nav-li" lay-tips="项目管理">&#xe6ce;</i>
+                    <cite>项目管理</cite>
+                    <i class="iconfont nav_right">&#xe697;</i></a>
+                <ul class="sub-menu">
+                    <li>
+                        <a onclick="xadmin.add_tab('机台管理','/machine_info')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>机台管理</cite></a>
+                    </li>
+                    <!-- <li>
+                        <a onclick="xadmin.add_tab('51K机台管理','/51k_machine_info')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>51K机台管理</cite></a>
+                    </li> -->
+                    <li>
+                        <a onclick="xadmin.add_tab('参数管理','/param_info')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>参数管理</cite></a>
+                    </li>
+                    <!-- <li>
+                        <a onclick="xadmin.add_tab('水电管理','/water_electricity_meter_info')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>水电管理</cite></a>
+                    </li> -->
+                    <li>
+                        <a onclick="xadmin.add_tab('相机管理','/camera_info')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>相机管理</cite></a>
+                    </li>
+                    {% if g.authority == '3' or g.authority == '2' %}
+                        <!-- <li>
+                            <a onclick="xadmin.add_tab('PDA管理','/pda_info')">
+                                <i class="iconfont">&#xe6a7;</i>
+                                <cite>PDA管理</cite></a>
+                        </li> -->
+                    {% endif %}
+                </ul>
+            </li>
+            <li>
+                <a href="javascript:;">
+                    <i class="iconfont left-nav-li" lay-tips="工单管理">&#xe723;</i>
+                    <cite>工单管理</cite>
+                    <i class="iconfont nav_right">&#xe697;</i></a>
+                <ul class="sub-menu">
+                    <li>
+                        <a onclick="xadmin.add_tab('工单查询','/work_order_info')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>工单查询</cite></a>
+                    </li>
+                </ul>
+            </li>
+            {% if g.authority == '3' %}
+                <li>
+                    <a href="javascript:;">
+                        <i class="iconfont left-nav-li" lay-tips="用户管理">&#xe726;</i>
+                        <cite>用户管理</cite>
+                        <i class="iconfont nav_right">&#xe697;</i></a>
+                    <ul class="sub-menu">
+                        <li>
+                            <a onclick="xadmin.add_tab('用户信息','/user_info')">
+                                <i class="iconfont">&#xe6a7;</i>
+                                <cite>用户信息</cite></a>
+                        </li>
+                    </ul>
+                </li>
+            {% endif %}
+            <li>
+                <a href="javascript:;">
+                    <i class="iconfont left-nav-li" lay-tips="测试功能">&#xe723;</i>
+                    <cite>测试功能</cite>
+                    <i class="iconfont nav_right">&#xe697;</i></a>
+                <ul class="sub-menu">
+                    <li>
+                        <a onclick="xadmin.add_tab('文件下载测试','/file_download')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>文件下载测试</cite></a>
+                    </li>
+                    <li>
+                        <a onclick="xadmin.add_tab('WCF 测试','/wcf_test')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>WCF 测试</cite></a>
+                    </li>
+                    <li>
+                        <a onclick="xadmin.add_tab('API测试','/api_test')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>API测试</cite></a>
+                    </li>
+                    <li>
+                        <a onclick="xadmin.add_tab('机台参数实时','/get_machine_params')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>机台参数实时</cite></a>
+                    </li>
+                    <li>
+                        <a onclick="xadmin.add_tab('码生成','/barcode_qrcode_quick_generator')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>码生成</cite></a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="javascript:;">
+                    <i class="iconfont left-nav-li" lay-tips="日志查询">&#xe723;</i>
+                    <cite>日志查询</cite>
+                    <i class="iconfont nav_right">&#xe697;</i></a>
+                <ul class="sub-menu">
+                    <li>
+                        <a onclick="xadmin.add_tab('DCN 日志','/dcn_log')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>DCN 日志查询</cite></a>
+                    </li>
+                    <li>
+                        <a onclick="xadmin.add_tab('IPC 日志','/ipc_log')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>IPC 日志</cite></a>
+                    </li>
+                    <li>
+                        <a onclick="xadmin.add_tab('工单图层查询','/production_records')">
+                            <i class="iconfont">&#xe6a7;</i>
+                            <cite>工单图层查询</cite></a>
+                    </li>
+                    {% if g.authority == '3' or g.authority == '2' %}
+                        <li>
+                            <a onclick="xadmin.add_tab('位置代码','/location_code_info')">
+                                <i class="iconfont">&#xe6a7;</i>
+                                <cite>位置代码</cite></a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div>
+<!-- <div class="x-slide_left"></div> -->
+<!-- 左侧菜单结束 -->
+<!-- 右侧主体开始 -->
+<div class="page-content">
+    <div class="layui-tab tab" lay-filter="xbs_tab" lay-allowclose="false">
+        <ul class="layui-tab-title">
+            <li class="home">
+                <i class="layui-icon">&#xe68e;</i>后台首页
+            </li>
+        </ul>
+        <div class="layui-unselect layui-form-select layui-form-selected" id="tab_right">
+            <dl>
+                <dd data-type="this">关闭当前</dd>
+                <dd data-type="other">关闭其它</dd>
+                <dd data-type="all">关闭全部</dd>
+            </dl>
+        </div>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                {% block content %}
+                    <!-- 页面内容会在这里显示 -->
+                {% endblock %}
+                <!-- <iframe src='/welcome' frameborder="0" scrolling="yes" class="x-iframe"></iframe> -->
+            </div>
+        </div>
+        <div id="tab_show"></div>
+    </div>
+</div>
+<div class="page-content-bg"></div>
+<style id="theme_style"></style>
+<script>
+    // 确保每次聚焦时自动填充被禁用
+    document.querySelectorAll('input, textarea').forEach((element) => {
+        element.setAttribute('autocomplete', 'off');
+        element.setAttribute('readonly', 'true');  // 在默认状态下禁用自动填充
+        element.addEventListener('focus', function () {
+            this.removeAttribute('readonly');  // 当获取焦点时，解除 readonly，允许输入
+        });
+    });
+</script>
+</body>
+
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面 - IPC</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <!-- 新增自定义样式 -->
+    <style>
+        /* 修改layui下拉菜单鼠标滑过项的背景色 */
+      .layui-form-select dl dd:hover {
+            background-color: #009688;
+        }
+
+        /* 修改layui下拉菜单选中项的背景色 */
+      .layui-form-select dl dd.layui-this {
+            background-color: #009688;
+        }
+    </style>
+    <script type="text/javascript" src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <label for="machine_pm" class="layui-form-label">机台编号</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="machine_pm" name="machine_pm" value="{{ machine_pm }}" autocomplete="off" disabled class="layui-input">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">{{ machine_name if machine_pm else '无' }}</div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="param_name" class="layui-form-label">名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="param_name" name="param_name" autocomplete="off" class="layui-input" value="{{ param_name }}">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">地址的名称信息</div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="param_address" class="layui-form-label">地址</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="param_address" name="param_address" autocomplete="off" class="layui-input" value="{{ param_address }}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="param_unit" class="layui-form-label">单位</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="param_unit" name="param_unit" autocomplete="off" class="layui-input" value="{{ param_unit }}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="read_bit" class="layui-form-label">读取16/32位</label>
+                    <div class="layui-input-inline">
+                        <select id="read_bit" name="read_bit">
+                            <option value="无" {% if read_bit == '无' %}selected{% endif %}>无</option>
+                            <option value="INT_16" {% if read_bit == 'INT_16' %}selected{% endif %}>INT_16</option>
+                            <option value="INT_32" {% if read_bit == 'INT_32' %}selected{% endif %}>INT_32</option>
+                            <option value="FLOAT_16" {% if read_bit == 'FLOAT_16' %}selected{% endif %}>FLOAT_16</option>
+                            <option value="FLOAT_32" {% if read_bit == 'FLOAT_32' %}selected{% endif %}>FLOAT_32</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="is_read_hex" class="layui-form-label">十六进制值</label>
+                    <div class="layui-input-inline">
+                        <select id="is_read_hex" name="is_read_hex">
+                            <option value="False" {% if is_read_hex == 'False' %}selected{% endif %}>False</option>
+                            <option value="True" {% if is_read_hex == 'True' %}selected{% endif %}>True</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="param_multiply" class="layui-form-label">倍率转换</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="param_multiply" name="param_multiply" autocomplete="off" class="layui-input" value="{{ param_multiply }}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="L_repass" class="layui-form-label"></label>
+                    <button class="layui-btn" lay-filter="add" lay-submit="">修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        layui.use(['form', 'layer', 'jquery'], function () {
+            var $ = layui.jquery;
+            var form = layui.form;
+            var layer = layui.layer;
+
+            // Flask 渲染后传递的变量
+            var param_id = "{{ param_id }}";
+            var update_param_info_url = "{{ update_param_info_url }}";
+
+            // 修正变量引用，假设 machine_pm 应该是从后端传递的变量
+            var machine_pm = "{{ machine_pm }}";
+            console.log("修养修改PM信息: ", machine_pm, update_param_info_url);
+
+            // 监听表单提交
+            form.on('submit(add)', function (data) {
+                // 发异步，把数据提交给服务器
+                data.field.param_id = param_id;
+                var data_info = JSON.stringify(data.field);
+
+                console.log('需要修改的内容:', data_info);
+
+                // 使用 jQuery 的 $.ajax 发起 POST 请求
+                $.ajax({
+                    url: update_param_info_url,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: data_info,
+                    success: function (response) {
+                        console.log('Success:', response);
+
+                        layer.alert("修改成功", {
+                            icon: 6
+                        }, function () {
+                            xadmin.close();
+                            xadmin.father_reload();
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error:', error);
+
+                        layer.alert("修改失败，请重试！", {
+                            icon: 5
+                        }, function () {
+                            layer.closeAll();
+                        });
+                    }
+                });
+                // 阻止表单默认提交行为
+                return false;
+            });
+        });
+    </script>
+
+</body>
+
+</html>

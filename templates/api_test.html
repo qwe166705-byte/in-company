@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 请求测试工具</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #444;
+        }
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+        textarea {
+            height: 120px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #009688;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0a524b;
+        }
+        #response {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            box-sizing: border-box;
+        }
+        .select-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .select-container select {
+            width: 58%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>API 请求测试工具</h1>
+
+        <div class="form-group">
+            <label for="url">API URL:</label>
+            <input type="text" id="url" name="url" placeholder="例如: https://api.example.com">
+        </div>
+
+        <div class="select-container">
+            <div class="form-group">
+                <label for="method">请求方法:</label>
+                <select id="method" name="method">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="params">请求参数 (仅 GET 请求需要, JSON 格式):</label>
+                <textarea id="params" placeholder='{"key": "value"}'></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="body">请求体 (仅 POST 请求需要, JSON 格式):</label>
+            <textarea id="body" placeholder='{"key": "value"}'></textarea>
+        </div>
+
+        <button onclick="sendRequest()">发送请求</button>
+
+        <div id="response"></div>
+    </div>
+
+    <script>
+        // 将 Unicode 编码的字符串转为中文
+        function decodeUnicode(str) {
+            return str.replace(/\\u[\dA-F]{4}/gi, function(match) {
+                return String.fromCharCode(parseInt(match.replace(/\\u/, ''), 16));
+            });
+        }
+
+        async function sendRequest() {
+            // 清空之前的响应信息
+            document.getElementById('response').textContent = '';
+
+            const url = document.getElementById('url').value;
+            const method = document.getElementById('method').value;
+            const paramsText = document.getElementById('params').value;
+            const bodyText = document.getElementById('body').value;
+
+            // 检查必填项是否为空
+            if (!url) {
+                alert('API URL 不能为空！');
+                return;
+            }
+
+            let params = {};
+            let body = null;
+
+            // 处理 GET 请求的参数
+            if (paramsText) {
+                try {
+                    params = JSON.parse(paramsText);
+                } catch (e) {
+                    alert("GET 请求参数格式不正确！");
+                    return;
+                }
+            }
+
+            // 处理 POST 请求体
+            if (method === "POST" && bodyText) {
+                try {
+                    body = JSON.parse(bodyText);
+                } catch (e) {
+                    alert("POST 请求体格式不正确！");
+                    return;
+                }
+            }
+
+            // 拼接 GET 请求的 URL 参数
+            let finalUrl = url;
+            if (method === "GET" && Object.keys(params).length > 0) {
+                finalUrl += '?' + new URLSearchParams(params).toString();
+            }
+
+            // 发送请求
+            try {
+                const response = await fetch(finalUrl, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: method === "POST" ? JSON.stringify(body) : null,
+                });
+
+                // 获取响应内容并解码 Unicode 编码的字符串
+                const responseText = await response.text();
+                const decodedResponse = decodeUnicode(responseText);
+
+                document.getElementById('response').textContent = `响应状态: ${response.status}\n响应体: ${decodedResponse}`;
+            } catch (error) {
+                document.getElementById('response').textContent = `请求失败: ${error.message}`;
+            }
+        }
+    </script>
+
+</body>
+</html>

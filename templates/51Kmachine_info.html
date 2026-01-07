@@ -1,0 +1,613 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="../static/js/tailwindcss.js"></script>
+    <link href="../static/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="../static/images/4m1e.png" type="image/x-icon"/>
+    <title>51K机台信息</title>
+    <style>
+        /* 滑动开关样式 */
+       .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+       .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+       .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+       .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked +.slider {
+            background-color: #2196F3;
+        }
+
+        input:focus +.slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked +.slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+       .slider.round {
+            border-radius: 34px;
+        }
+
+       .slider.round:before {
+            border-radius: 50%;
+        }
+
+        /* 模态框样式 */
+       .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+       .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+       .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            cursor: pointer;
+        }
+
+        /* 优化后的分页样式 */
+       .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+       .page-btn {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            background-color: #ffffff;
+            color: #374151;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+
+       .page-btn:hover {
+            background-color: #f3f4f6;
+        }
+
+       .page-btn.active {
+            background-color: #60a5fa;
+            border-color: #60a5fa;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+       .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+               /* 新增提示框样式（修改后） */
+       .toast {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            max-width: 90%; /* 防止过长内容溢出 */
+            text-align: center; /* 文字居中 */
+        }
+
+       .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+       .toast-success {
+            background-color: #4ade80;
+            color: white;
+        }
+
+       .toast-error {
+            background-color: #f87171;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-8">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-4">
+                <input type="text" id="pm-search" placeholder="机台 PM 搜索"
+                    class="border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 w-1/2">
+                <input type="text" id="name-search" placeholder="机台名称搜索"
+                    class="border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500 w-1/2">
+            </div>
+            <button id="addButton" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                onclick="openAddModal()">新增机台</button>
+        </div>
+        <div class="overflow-x-auto">
+            <table id="machine-table" class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th style="width: 100px;" scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PM</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名称</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IPC IP</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">过站条码</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数据源</th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" class="bg-white divide-y divide-gray-200">
+                    <!-- 数据将在这里渲染 -->
+                </tbody>
+            </table>
+        </div>
+        <div id="pagination" class="pagination-container">
+            <button id="prev-btn" class="page-btn" disabled>&lt; 上一页</button>
+            <!-- 页码按钮将在这里渲染 -->
+            <button id="next-btn" class="page-btn" disabled>下一页 &gt;</button>
+        </div>
+    </div>
+
+    <!-- 编辑模态框 -->
+    <div id="editModal" class="modal" onclick="closeModalOutside(event, 'editModal')">
+        <div class="modal-content relative" onclick="stopPropagation(event)">
+            <span class="modal-close text-gray-600 hover:text-gray-800" onclick="closeModal('editModal')">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">编辑机台信息</h2>
+            <form id="editForm">
+                <input type="hidden" id="edit-machine-name">
+                <div class="flex flex-wrap -mx-3 mb-4">
+                    <div class="w-full md:w-1/2 px-3 mb-4 md:mb-0">
+                        <label class="block text-sm font-medium text-gray-700">PM:</label>
+                        <input type="text" id="edit-pm"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入 PM" required readonly autocomplete="off">
+                    </div>
+                    <div class="w-full md:w-1/2 px-3">
+                        <label class="block text-sm font-medium text-gray-700">名称:</label>
+                        <input type="text" id="edit-name"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入名称" autocomplete="off">
+                    </div>
+                </div>
+                <div class="flex flex-wrap -mx-3 mb-4">
+                    <div class="w-full md:w-1/2 px-3 mb-4 md:mb-0">
+                        <label class="block text-sm font-medium text-gray-700">IPC IP:</label>
+                        <input type="text" id="edit-ipc-ip"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入 IPC IP" autocomplete="off">
+                    </div>
+                    <div class="w-full md:w-1/2 px-3">
+                        <label class="block text-sm font-medium text-gray-700">过站条码:</label>
+                        <input type="text" id="edit-terminal-id"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入过站条码" autocomplete="off">
+                    </div>
+                </div>
+                <div class="flex flex-wrap -mx-3 mb-4">
+                    <div class="w-full md:w-1/2 px-3 mb-4 md:mb-0">
+                        <label class="block text-sm font-medium text-gray-700">数据源:</label>
+                        <input type="text" id="edit-source-name"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入数据源" autocomplete="off">
+                    </div>
+                </div>
+                <button type="button"
+                    class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                    onclick="submitEditForm()">保存修改</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 新增模态框 -->
+    <div id="addModal" class="modal" onclick="closeModalOutside(event, 'addModal')">
+        <div class="modal-content relative" onclick="stopPropagation(event)">
+            <span class="modal-close text-gray-600 hover:text-gray-800" onclick="closeModal('addModal')">&times;</span>
+            <h2 class="text-2xl font-bold mb-4">新增机台</h2>
+            <form id="addForm">
+                <div class="flex flex-wrap -mx-3 mb-4">
+                    <div class="w-full md:w-1/2 px-3 mb-4 md:mb-0">
+                        <label class="block text-sm font-medium text-gray-700">PM:</label>
+                        <input type="text" id="add-pm"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入 PM" required autocomplete="off">
+                    </div>
+                    <div class="w-full md:w-1/2 px-3">
+                        <label class="block text-sm font-medium text-gray-700">名称:</label>
+                        <input type="text" id="add-name"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入名称" required autocomplete="off">
+                    </div>
+                </div>
+                <div class="flex flex-wrap -mx-3 mb-4">
+                    <div class="w-full md:w-1/2 px-3 mb-4 md:mb-0">
+                        <label class="block text-sm font-medium text-gray-700">IPC IP:</label>
+                        <input type="text" id="add-ipc-ip"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入 IPC IP" required autocomplete="off">
+                    </div>
+                    <div class="w-full md:w-1/2 px-3">
+                        <label class="block text-sm font-medium text-gray-700">过站条码:</label>
+                        <input type="text" id="add-terminal-id"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入过站条码" autocomplete="off">
+                    </div>
+                </div>
+                <div class="flex flex-wrap -mx-3 mb-4">
+                    <div class="w-full md:w-1/2 px-3 mb-4 md:mb-0">
+                        <label class="block text-sm font-medium text-gray-700">数据源:</label>
+                        <input type="text" id="add-source-name"
+                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="请输入数据源" required autocomplete="off">
+                    </div>
+                </div>
+                <button type="button"
+                    class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                    onclick="submitAddForm()">提交</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 提示框 -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const tableBody = document.getElementById('table-body');
+        const pmSearch = document.getElementById('pm-search');
+        const nameSearch = document.getElementById('name-search');
+        const pagination = document.getElementById('pagination');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        let allData = [];
+        const itemsPerPage = 15;
+        let currentPage = 1;
+        let filteredData = [];
+        const maxVisiblePages = 5; // 控制可见页码数量
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/51k_machine_data');
+                if (!response.ok) {
+                    throw new Error('网络响应异常');
+                }
+                const result = await response.json();
+                allData = result.machine_data;
+                searchData();
+            } catch (error) {
+                console.error('数据获取出错:', error);
+                showToast('数据获取失败，请重试', 'toast-error');
+            }
+        }
+
+        function renderTable(data) {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentData = data.slice(startIndex, endIndex);
+            tableBody.innerHTML = '';
+            currentData.forEach(item => {
+                const row = document.createElement('tr');
+                const pm = item.MACHINE_PM || '无';
+                const name = item.MACHINE_NAME || '无';
+                const ipcIp = item.IPC_IP || '无';
+                const terminalId = item.TERMINAL_ID || '无';
+                const sourceName = item.SOURCE_NAME || '无';
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${pm}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${ipcIp}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${terminalId}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${sourceName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+<!--                        <label class="switch">-->
+<!--                            <input type="checkbox" onchange="toggleSwitch(this, '${name}')">-->
+<!--                            <span class="slider round"></span>-->
+<!--                        </label>-->
+<!--                        <button class="text-green-500 hover:underline ml-2" onclick="updateItem('${name}')">更新</button>-->
+                        <button class="text-blue-500 hover:underline ml-2" onclick="editItem('${pm}', '${name}', '${ipcIp}', '${terminalId}', '${sourceName}')">编辑</button>
+                        <button class="text-red-500 hover:underline ml-2" onclick="deleteItem('${pm}')">删除</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            renderPagination(data.length);
+        }
+
+        function editItem(pm, name, ipcIp, terminalId, sourceName) {
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'flex';
+            document.getElementById('edit-machine-name').value = name;
+            document.getElementById('edit-pm').value = pm;
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-ipc-ip').value = ipcIp;
+            document.getElementById('edit-terminal-id').value = terminalId;
+            document.getElementById('edit-source-name').value = sourceName;
+        }
+
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            // 重置按钮
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            pagination.innerHTML = '';
+
+            // 添加上一页按钮
+            pagination.appendChild(prevBtn);
+
+            // 添加页码按钮
+            if (startPage > 1) {
+                addPageButton(1);
+                if (startPage > 2) addEllipsis();
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                addPageButton(i);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) addEllipsis();
+                addPageButton(totalPages);
+            }
+
+            // 添加下一页按钮
+            pagination.appendChild(nextBtn);
+
+            // 绑定上一页和下一页按钮的点击事件
+            prevBtn.onclick = () => changePage(currentPage - 1);
+            nextBtn.onclick = () => changePage(currentPage + 1);
+        }
+
+        function addPageButton(page) {
+            const button = document.createElement('button');
+            button.className = 'page-btn';
+            button.textContent = page;
+            if (page === currentPage) button.className += ' active';
+            button.addEventListener('click', () => changePage(page));
+            pagination.appendChild(button);
+        }
+
+        function addEllipsis() {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'page-btn';
+            ellipsis.textContent = '...';
+            pagination.appendChild(ellipsis);
+        }
+
+        function changePage(page) {
+            if (page < 1 || page > Math.ceil(filteredData.length / itemsPerPage)) return;
+            currentPage = page;
+            renderTable(filteredData);
+        }
+
+        function searchData() {
+            const pmQuery = pmSearch.value.toLowerCase();
+            const nameQuery = nameSearch.value.toLowerCase();
+            filteredData = allData.filter(item => {
+                const pm = (item.MACHINE_PM || '').toLowerCase();
+                const name = (item.MACHINE_NAME || '').toLowerCase();
+                return pm.includes(pmQuery) && name.includes(nameQuery);
+            });
+            currentPage = 1;
+            renderTable(filteredData);
+        }
+
+        function toggleSwitch(checkbox, machineName) {
+            if (checkbox.checked) {
+                console.log(`已开启 ${machineName} 的开关`);
+                // 在这里添加实际的开启方法逻辑
+            } else {
+                console.log(`已关闭 ${machineName} 的开关`);
+                // 在这里添加实际的关闭方法逻辑
+            }
+        }
+
+        function updateItem(machineName) {
+            console.log(`已点击更新 ${machineName} 的信息`);
+            // 在这里添加实际的更新方法逻辑
+        }
+
+        function submitEditForm() {
+            const machineName = document.getElementById('edit-machine-name').value;
+            const pm = document.getElementById('edit-pm').value;
+            const name = document.getElementById('edit-name').value;
+            const ipcIp = document.getElementById('edit-ipc-ip').value;
+            const terminalId = document.getElementById('edit-terminal-id').value;
+            const sourceName = document.getElementById('edit-source-name').value;
+            console.log(`编辑页面已点击提交 ${machineName} 的信息, PM: ${pm}, 名称: ${name}, IPC IP: ${ipcIp}, 过站条码: ${terminalId}, 数据源: ${sourceName}`);
+
+            fetch(`/edit_51k_machine_info/${machineName}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    MACHINE_PM: pm,
+                    MACHINE_NAME: name,
+                    IPC_IP: ipcIp,
+                    TERMINAL_ID: terminalId,
+                    SOURCE_NAME: sourceName
+                })
+            })
+              .then(response => response.json())
+              .then(data => {
+                    if (data.success) {
+                        closeModal('editModal');
+                        allData = allData.map(item => item.MACHINE_NAME === machineName ? {
+                            ...item,
+                            MACHINE_PM: pm,
+                            MACHINE_NAME: name,
+                            IPC_IP: ipcIp,
+                            TERMINAL_ID: terminalId,
+                            SOURCE_NAME: sourceName
+                        } : item);
+                        searchData();
+                        showToast('编辑机台信息成功', 'toast-success');
+                    } else {
+                        showToast(`编辑失败：${data.message}`, 'toast-error');
+                    }
+                })
+              .catch(error => {
+                    showToast('网络请求失败，请重试', 'toast-error');
+                });
+        }
+
+        function deleteItem(pm) {
+            fetch('/delete_51k_machine_info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    MACHINE_PM: pm
+                })
+            })
+              .then(response => response.json())
+              .then(data => {
+                    if (data.success) {
+                        allData = allData.filter(item => item.MACHINE_PM !== pm);
+                        searchData();
+                        showToast('删除机台信息成功', 'toast-success');
+                    } else {
+                        showToast(`删除失败：${data.message}`, 'toast-error');
+                    }
+                })
+              .catch(error => {
+                    showToast('网络请求失败，请重试', 'toast-error');
+                });
+        }
+
+        function openAddModal() {
+            const modal = document.getElementById('addModal');
+            modal.style.display = 'flex';
+<!--            modal.querySelector('form').reset(); // 重置表单-->
+        }
+
+        function submitAddForm() {
+            const pm = document.getElementById('add-pm').value;
+            const name = document.getElementById('add-name').value;
+            const ipcIp = document.getElementById('add-ipc-ip').value;
+            const terminalId = document.getElementById('add-terminal-id').value;
+            const sourceName = document.getElementById('add-source-name').value;
+            console.log(`已点击提交 ${name} 的信息, PM: ${pm}, IPC IP: ${ipcIp}, 过站条码: ${terminalId}, 数据源: ${sourceName}`);
+
+            fetch('/add_51k_machine_info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    MACHINE_PM: pm,
+                    MACHINE_NAME: name,
+                    IPC_IP: ipcIp,
+                    TERMINAL_ID: terminalId,
+                    SOURCE_NAME: sourceName
+                })
+            })
+              .then(response => response.json())
+              .then(data => {
+                    if (data.success) {
+                        closeModal('addModal');
+                        allData.push(data.newItem);
+                        searchData();
+                        showToast('新增机台信息成功', 'toast-success');
+                    } else {
+                        showToast(`新增失败：${data.message}`, 'toast-error');
+                    }
+                })
+              .catch(error => {
+                    showToast('网络请求失败，请重试', 'toast-error');
+                });
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+        }
+
+        function closeModalOutside(event, modalId) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(modalId);
+            }
+        }
+
+        function stopPropagation(event) {
+            event.stopPropagation();
+        }
+
+        // 提示框显示函数保持不变
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.className = `toast ${type} show`;
+            toast.textContent = message;
+            setTimeout(() => {
+                toast.className = 'toast';
+                toast.textContent = '';
+            }, 3000);
+        }
+
+        pmSearch.addEventListener('input', searchData);
+        nameSearch.addEventListener('input', searchData);
+
+        window.onload = fetchData;
+    </script>
+</body>
+
+</html>

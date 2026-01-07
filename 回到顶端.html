@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下拉菜单和搜索框结合</title>
+    <style>
+        /* 样式调整 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            width: 200px;
+        }
+
+        .dropdown input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            display: none;
+            z-index: 1;
+        }
+
+        .dropdown-list li {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .dropdown-list li:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+<div class="dropdown">
+    <input type="text" id="search" placeholder="搜索或选择..." onkeyup="filterList()" autocomplete="off">
+    <ul id="dropdownList" class="dropdown-list">
+        <li>苹果</li>
+        <li>香蕉</li>
+        <li>橙子</li>
+        <li>葡萄</li>
+        <li>西瓜</li>
+        <li>草莓</li>
+        <li>樱桃</li>
+        <li>荔枝</li>
+        <li>梨子</li>
+        <li>桃子</li>
+        <li>柠檬</li>
+        <li>柚子</li>
+        <li>椰子</li>
+        <li>杏子</li>
+        <li>蓝莓</li>
+        <li>黑莓</li>
+        <li>芒果</li>
+        <li>菠萝</li>
+        <li>橘子</li>
+        <li>石榴</li>
+        <li>枇杷</li>
+        <li>番茄</li>
+    </ul>
+</div>
+
+<script>
+    const searchInput = document.getElementById('search');
+    const dropdownList = document.getElementById('dropdownList');
+    const listItems = dropdownList.getElementsByTagName('li');
+
+    // 显示下拉列表
+    searchInput.addEventListener('focus', function () {
+        // 如果文本框为空，则显示所有内容
+        if (searchInput.value === '') {
+            dropdownList.style.display = 'block';
+        }
+    });
+
+    // 隐藏下拉列表
+    searchInput.addEventListener('blur', function () {
+        setTimeout(() => {
+            dropdownList.style.display = 'none';
+        }, 200);  // 延迟隐藏，防止点击时立即消失
+    });
+
+    // 过滤下拉列表
+    function filterList() {
+        const filter = searchInput.value.toLowerCase();
+        let isMatchFound = false;
+
+        // 如果文本框为空，显示所有项
+        if (filter === '') {
+            dropdownList.style.display = 'block';
+            for (let i = 0; i < listItems.length; i++) {
+                listItems[i].style.display = '';
+            }
+        } else {
+            let matchCount = 0;
+
+            // 遍历所有选项，判断是否与输入匹配
+            for (let i = 0; i < listItems.length; i++) {
+                const itemText = listItems[i].textContent || listItems[i].innerText;
+                if (itemText.toLowerCase().indexOf(filter) > -1) {
+                    listItems[i].style.display = '';
+                    matchCount++;
+                } else {
+                    listItems[i].style.display = 'none';
+                }
+            }
+
+            // 如果有匹配的项，则显示下拉菜单
+            if (matchCount > 0) {
+                dropdownList.style.display = 'block';
+            } else {
+                dropdownList.style.display = 'none';
+            }
+        }
+    }
+
+    // 选择列表项
+    dropdownList.addEventListener('click', function (e) {
+        if (e.target.tagName.toLowerCase() === 'li') {
+            searchInput.value = e.target.textContent;
+            dropdownList.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

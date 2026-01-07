@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-IPC</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        /* 确保下拉菜单可见 */
+        .layui-form input[type=checkbox], .layui-form input[type=radio], .layui-form select {
+            display: block;
+        }
+        .password-container {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除
+                    </button>
+                    <button class="layui-btn" onclick="xadmin.open('新增用户','/user_add',600,350)"><i
+                            class="layui-icon"></i>新增用户
+                    </button>
+                </div>
+                <div class="layui-card-body layui-table-body layui-table-main">
+                    <table class="layui-table layui-form">
+                        <thead>
+                        <tr>
+                            <th style="width: 0px;">
+                                <input type="checkbox" id="checkall" name="" lay-skin="primary">
+                            </th>
+                            <th>工号</th>
+                            <th>用户名</th>
+                            <th>机台PM</th>
+                            <th>机台名称</th>
+                            <th>密码</th>
+                            <th>权限</th>
+                            <th>登录设备IP</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for value in user_infos %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="id" value="{{ value['EMP_NO'] }}" lay-skin="primary">
+                                </td>
+                                <td>{{ value['EMP_NO'] }}</td>
+                                <td>{{ value['EMP_NAME'] }}</td>
+                                <td>{% if value['MACHINE_PM'] is not none %}{{ value['MACHINE_PM'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['MACHINE_NAME'] is not none %}{{ value['MACHINE_NAME'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>
+                                    <div class="password-container">
+                                        <span class="password-text" data-password="{{ value['PASSWORD'] }}">
+                                            {{ '*' * value['PASSWORD']|length }}
+                                        </span>
+                                        <i class="layui-icon password-toggle" onclick="togglePasswordVisibility(this)">&#xe636;</i>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if value['AUTHORITY'] == '1' %}
+                                        工程师
+                                    {% elif value['AUTHORITY'] == '2' %}
+                                        管理员
+                                    {% elif value['AUTHORITY'] == '3' %}
+                                        超级管理员
+                                    {% else %}
+                                        操作员
+                                    {% endif %}
+                                </td>
+                                <td>{% if value['USER_IP'] is not none %}{{ value['USER_IP'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td class="td-manage">
+                                    <a title="编辑" onclick="openEditModal(this, '{{ value['EMP_NO'] }}')"
+                                       href="javascript:;">
+                                        <i class="layui-icon">&#xe642;</i>
+                                    </a>
+                                    <a title="删除" onclick="user_del(this,'{{ value['EMP_NO'] }}')"
+                                       href="javascript:;">
+                                        <i class="layui-icon">&#xe640;</i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    var server_url = "{{ server_url }}";
+    document.getElementById('checkall').addEventListener('change', function () {
+        var checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = this.checked;
+        }
+    });
+
+    function delAll() {
+        var ids = [];
+        // 获取选中的id，避免重复遍历
+        $('tbody input:checked').each(function () {
+            ids.push($(this).val());
+        });
+        console.log(ids);
+        if (ids.length === 0) {
+            layer.msg('请至少选择一项', {icon: 2});
+            return;
+        }
+        del_api(ids);
+    }
+
+    /*参数-删除*/
+    function user_del(obj, ids) {
+        // 提示确认删除操作
+        layer.confirm('确认要删除吗？' + ids, {icon: 3}, function (index) {
+            // 禁用按钮，避免重复点击
+            $(obj).prop('disabled', true);
+
+            // 发异步请求删除数据
+            $.ajax({
+                url: server_url + '/del_user_info',  // 参数删除接口
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify([ids]),  // 传递要删除的对象标识符
+                success: function (response) {
+                    // 如果删除成功
+                    if (response.message) {
+                        // 删除行
+                        $(obj).parents("tr").remove();
+                        layer.msg(response.message, {icon: 1, time: 1000});
+                    } else {
+                        // 如果删除失败，提示错误信息
+                        layer.msg(response.message, {icon: 2});
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 处理请求失败
+                    layer.msg('删除失败，请稍后再试', {icon: 2});
+                },
+                complete: function () {
+                    // 请求完成后重新启用按钮
+                    $(obj).prop('disabled', false);
+                }
+            });
+
+            // 关闭确认框
+            layer.close(index);
+        });
+    }
+
+    function del_api(ids) {
+        // 提示机台确认删除
+        layer.confirm('确认要删除吗？' + ids.join(', '), {icon: 3}, function (index) {
+            // 禁用确认按钮，避免重复点击
+            layer.close(index);
+            layer.load(1);  // 显示加载层
+            console.log(server_url + '/del_user_info')
+            // 发送删除请求
+            $.ajax({
+                url: server_url + '/del_user_info', // 后端接口
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(ids), // 转换为 JSON 格式
+                success: function (response) {
+                    // 请求成功处理
+                    if (response.message) {
+                        layer.msg(response.message, {icon: 1});
+                        // 删除选中的行
+                        $("tbody input:checked").each(function () {
+                            $(this).closest('tr').remove();
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 请求失败处理
+                    var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "删除失败";
+                    layer.msg(errorMessage, {icon: 2});
+                },
+                complete: function () {
+                    // 请求完成后，隐藏加载层
+                    layer.closeAll('loading');
+                }
+            });
+        });
+    }
+
+
+    function openEditModal(editButton, pda_id) {
+        // 获取当前行
+        var row = editButton.closest('tr');
+        var emp_no = row.cells[1].innerText;
+        var emp_name = row.cells[2].innerText;
+        var machine_pm = row.cells[3].innerText;
+        var machine_name = row.cells[4].innerText;
+        var password = row.cells[5].querySelector('.password-text').dataset.password;
+        var authorityText = row.cells[6].innerText;  // 获取权限名称
+        var authority;
+
+        if (authorityText === '工程师') {
+            authority = 1;
+        } else if (authorityText === '管理员') {
+            authority = 2;
+        } else if (authorityText === '超级管理员') {
+            authority = 3;
+        } else {
+            authority = 0;  // 如果权限未知，返回默认值（例如 0）
+        }
+        var user_ip = row.cells[7].innerText;
+
+        // 打开编辑页面并传递数据
+        var url = '/user_edit?emp_no=' + encodeURIComponent(emp_no) +
+            '&emp_name=' + encodeURIComponent(emp_name) +
+            '&machine_pm=' + encodeURIComponent(machine_pm) +
+            '&machine_name=' + encodeURIComponent(machine_name) +
+            '&password=' + encodeURIComponent(password) +
+            '&authority=' + encodeURIComponent(authority) +
+            '&user_ip=' + encodeURIComponent(user_ip);
+        console.log(url)
+        // 打开编辑页面并传递数据
+        xadmin.open('编辑', url, 600, 490);
+    }
+
+    function togglePasswordVisibility(icon) {
+        var passwordText = icon.previousElementSibling;
+        var password = passwordText.dataset.password;
+        if (passwordText.innerText === password) {
+            passwordText.innerText = '*'.repeat(password.length);
+            icon.innerHTML = '&#xe636;';
+        } else {
+            passwordText.innerText = password;
+            icon.innerHTML = '&#xe637;';
+        }
+    }
+
+</script>
+</html>    

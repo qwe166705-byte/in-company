@@ -1,0 +1,206 @@
+<!-- index.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html class="x-admin-sm">
+    <head>
+        <meta charset="UTF-8">
+        <title>IPC-后台维护</title>
+        <meta name="renderer" content="webkit">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+        <link rel="stylesheet" href="../static/css/font.css">
+        <link rel="stylesheet" href="../static/css/xadmin.css">
+        <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
+        <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    </head>
+    <body>
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-body ">
+                            <blockquote class="layui-elem-quote">欢迎您：
+                                <span style="color: #009688">{% if g.user %}{{ g.user['EMP_NAME'] }}{% else %}Guest{% endif %}</span>！当前时间：<span id="current-time"></span>
+                            </blockquote>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">机台数据</div>
+                        <div class="layui-card-body ">
+                            <ul class="layui-row layui-col-space10 layui-this x-admin-carousel x-admin-backlog">
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>机台数量</h3>
+                                        <p>
+                                            <cite>{{ data['machine_count'] }}</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>工单数量</h3>
+                                        <p>
+                                            <cite>{{ data['work_order_count'] }}</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>相机数量</h3>
+                                        <p>
+                                            <cite>{{data['camera_count'] }}</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>参数数量</h3>
+                                        <p>
+                                            <cite>{{ data['param_count'] }}</cite></p>
+                                    </a>
+                                </li>
+                                <li class="layui-col-md2 layui-col-xs6 ">
+                                    <a href="javascript:;" class="x-admin-backlog-body">
+                                        <h3>用户数量</h3>
+                                        <p>
+                                            <cite>{{ data['user_count'] }}</cite></p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-col-sm6 layui-col-md3">
+                    <div class="layui-card">
+                        <div class="layui-card-header">机台
+                            <span class="layui-badge layui-bg-cyan layuiadmin-badge">比</span></div>
+                        <div class="layui-card-body  ">
+                            <p class="layuiadmin-big-font">总数量 {{machine_count_sum }}</p>
+                            <p>已上线
+                                <span class="layuiadmin-span-color">{{ data['machine_online_count'] }}台</span>
+                            </p>
+                            <p>上线率
+                                <span class="layuiadmin-span-color">{{machine_sum_rate}}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-col-sm6 layui-col-md3">
+                    <div class="layui-card">
+                        <div class="layui-card-header">设备在线
+                            <span class="layui-badge layui-bg-cyan layuiadmin-badge">率</span></div>
+                        <div class="layui-card-body  ">
+                            <p class="layuiadmin-big-font">总数量 {{data['machine_count'] }}</p>
+                            <p>已上线
+                                <span class="layuiadmin-span-color">{{ data['machine_online_count'] }}台</span>
+                            </p>
+                            <p>在线率
+                                <span class="layuiadmin-span-color">{{machine_online_rate}}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="layui-col-sm6 layui-col-md3">
+                    <div class="layui-card">
+                        <div class="layui-card-header">相机在线
+                            <span class="layui-badge layui-bg-cyan layuiadmin-badge">率</span></div>
+                        <div class="layui-card-body ">
+                            <p class="layuiadmin-big-font">总数量 {{data['camera_count'] }}</p>
+                            <p>上线数
+                                <span class="layuiadmin-span-color">{{ data['camera_online_count'] }}台</span>
+                            </p>
+                            <p>在线状态
+                                <span class="layuiadmin-span-color">{{camera_online_rate}}
+                                    <i class="layui-inline layui-icon layui-icon-face-smile-b"></i>
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+               
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">系统信息</div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table">
+                                <tbody>
+                                    <tr>
+                                        <th>IPC版本</th>
+                                        <td>2.0</td></tr>
+                                    <tr>
+                                        <th>服务器地址</th>
+                                        <td>http:\\10.2.100.186</td></tr>
+                                    <tr>
+                                        <th>操作系统</th>
+                                        <td>windows、ios、pda、linux</td></tr>
+                                    <tr>
+                                        <th>运行环境</th>
+                                        <td>python3.7、win10</td></tr>
+                                    <tr>
+                                        <th>MYSQL版本</th>
+                                        <td>8.2.0</td>
+                                    </tr>
+                                    <tr>
+                                        <th>数据源</th>
+                                        <td>PLC、工业相机、机台日志、数据库等</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md12">
+                    <div class="layui-card">
+                        <div class="layui-card-header">开发团队</div>
+                        <div class="layui-card-body ">
+                            <table class="layui-table">
+                                <tbody>
+                                    <tr>
+                                        <th>版权所有</th>
+                                        <td>flex
+                                            <a href="javaScript:;" target="_blank">访问官网</a></td>
+                                    </tr>
+                                    <tr>
+                                        <th>开发者</th>
+                                        <td>张涛/姚小燕-自动化课</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        </div>
+
+        <script>
+            // 获取当前时间并格式化
+            function getCurrentTime() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                const day = now.getDate().toString().padStart(2, '0');
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            }
+        
+            // 设置当前时间
+            function updateTime() {
+                const timeElement = document.getElementById("current-time");
+                timeElement.textContent = getCurrentTime();  // 更新时间
+            }
+        
+            // 每秒更新时间
+            setInterval(updateTime, 1000);  // 每秒更新一次
+            updateTime();  // 页面加载时立即显示时间
+        </script>
+    </body>
+</html>
+{% endblock %}

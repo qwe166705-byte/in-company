@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple ECharts with Data Granularity Switch</title>
+    <!-- 引入 ECharts 库 -->
+
+    <style>
+        #container {
+            display: flex;
+            /* 将 flex-wrap 和 justify-content 属性添加到 Flex 容器 body 上 */
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 80%;
+            border: 1px solid #da0909;
+        }
+
+        .eCharts {
+            margin: 1px;
+            width: 80%;
+            /* 增加图表容器的高度 */
+            height: 50vh;
+            border: 1px solid #f68686;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    <script src="../static/js/echarts.min.js"></script>
+    <script>
+        function api() {
+            // 定义 Flask 应用的地址
+            const flaskAppUrl = 'http://10.2.38.126:5001';
+            // 定义请求的数据
+            const requestData = {"machine_pm": "40009262"};
+
+            // 发起 POST 请求到 /get_ipc_65_data 接口
+            return fetch(`${flaskAppUrl}/get_line_chart_data`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+               .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    return response.json();
+                })
+               .catch(error => {
+                    if (error instanceof SyntaxError) {
+                        console.log(`无效的 JSON 响应: ${error.message}`);
+                        return {};
+                    } else {
+                        console.log(`请求出错: ${error.message}`);
+                        return {};
+                    }
+                });
+        }
+
+        function drawChart(name_id, date_time, value_info, unit) {
+            const chart = echarts.init(document.getElementById(name_id));
+            // 计算数据的最大值
+            const maxValue = Math.max(...value_info);
+            // 为 Y 轴上限添加更多的额外间距，这里取最大值的 20% 并向上取整
+            const yMax = Math.ceil(maxValue + maxValue * 0.2);
+
+            var option = {
+                title: {
+                    text: name_id, // 设置图表标题
+                    left: 'center', // 设置标题居中
+                    padding: [20, 0, 0, 0], // 增加标题与图表内容的间距
+                    // 新增副标题，显示单位信息
+                    subtext: `单位: ${unit}`,
+                    subtextStyle: {
+                        color: '#666', // 副标题颜色
+                        fontSize: 12 // 副标题字体大小
+                    },
+                    subtextAlign: 'center' // 副标题居中显示
+                },
+                tooltip: {
+                    trigger: 'axis' // 设置提示框触发类型为坐标轴
+                },
+                xAxis: {
+                    type: 'category', // 设置 x 轴类型为类目轴
+                    data: date_time // 使用数据中的日期作为 x 轴数据
+                },
+                yAxis: {
+                    type: 'value', // 设置 y 轴类型为数值轴
+                    min: 0, // 让 Y 轴下限从 0 开始
+                    max: yMax,
+                    // 调整刻度分割数量，控制刻度之间的间隙
+                    splitNumber: 8,
+                    // 格式化 Y 轴标签为整数
+                    axisLabel: {
+                        formatter: function (value) {
+                            return Math.round(value);
+                        }
+                    }
+                },
+                series: [{
+                    type: 'line', // 设置图表类型为折线图
+                    data: value_info, // 使用数据中的温度值作为 y 轴数据
+                    smooth: true
+                }]
+            };
+            chart.setOption(option);
+            return chart; // 返回 ECharts 实例
+        }
+
+        const container = document.getElementById('container');
+        const charts = []; // 存储所有 ECharts 实例
+
+        // 调用 api 函数并处理返回的数据
+        api().then(dataDict => {
+            console.log('获取到的数据：', dataDict);
+            const date_time = dataDict.data.date_time;
+            const unit = dataDict.data.unit;
+            let index = 0;
+            for (const [key, value] of Object.entries(dataDict.data.value)) {
+                console.log('211', date_time, key, value);
+                const div = document.createElement('div');
+                div.id = key;
+                div.classList.add('eCharts');
+                container.appendChild(div);
+                const chart = drawChart(key, date_time, value, unit[index]);
+                charts.push(chart); // 将 ECharts 实例添加到数组中
+                index += 1;
+            }
+
+            // 监听窗口大小变化事件
+            window.addEventListener('resize', function () {
+                // 遍历所有图表实例并调用 resize 方法
+                charts.forEach(chart => {
+                    chart.resize();
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

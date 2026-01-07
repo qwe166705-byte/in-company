@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>IPC-后台维护登录</title>
+  <meta name="renderer" content="webkit|ie-comp|ie-stand" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport"
+    content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <link rel="stylesheet" href="../static/css/font.css" />
+  <link rel="stylesheet" href="../static/css/login.css" />
+  <link rel="stylesheet" href="../static/css/xadmin.css" />
+  <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+  <link rel="icon" href="../static/images/4m1e.png" type="image/x-icon"/>
+  <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
+</head>
+
+<body class="login-bg">
+  <div class="login layui-anim layui-anim-up">
+    <div class="message">IPC-登录</div>
+    <div id="darkbannerwrap"></div>
+
+    <form method="post" class="layui-form" action="/login">
+      <!-- <input name="username" placeholder="用户名" type="text" lay-verify="required" class="layui-input" /> -->
+      <input name="username" placeholder="用户名" type="text" class="layui-input" />
+      <hr class="hr15" />
+      <input name="password" lay-verify="required" placeholder="密码" type="password" class="layui-input" />
+      <hr class="hr15" />
+      <input value="登录" lay-submit lay-filter="login" style="width: 100%" type="submit" />
+      <hr class="hr20" />
+    </form>
+  </div>
+
+  <script>
+    layui.use(['form', 'layer'], function() {
+      var form = layui.form,
+          layer = layui.layer;
+
+      // 检查是否存在错误信息
+      {% if error %}
+        layer.msg("{{ error_message }}", {icon: 5});  // 弹出错误提示框
+      {% endif %}
+
+      // 监听表单提交事件
+      form.on('submit(login)', function(data) {
+        // 如果用户名或密码为空，弹出提示框
+        if (!data.field.username || !data.field.password) {
+          layer.msg("用户名和密码不能为空！", {icon: 5});  // 弹出错误提示框
+          return false;  // 阻止表单提交
+        }
+        return true;  // 表单正常提交
+      });
+    });
+  </script>
+</body>
+
+</html>

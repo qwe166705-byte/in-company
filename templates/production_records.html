@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生产记录查询</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 30px;
+        }
+
+       .form-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* 表单样式优化 */
+       .form-group {
+            margin-bottom: 0;
+        }
+
+       .form-control {
+            width: 100%;
+        }
+
+       .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+       .pagination {
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+       .pagination-button {
+            cursor: pointer;
+            padding: 6px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background-color: white;
+            margin: 0 5px;
+        }
+
+       .pagination-button:hover {
+            background-color: #e9ecef;
+        }
+
+       .active-page {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+       .page-jump {
+            margin-left: 20px;
+        }
+
+       .error-message {
+            color: red;
+            margin-left: 10px;
+        }
+
+       .bad-row {
+            background-color: red;
+            color: white;
+        }
+
+       .good-row {
+            background-color: green;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>生产记录查询</h1>
+        <form id="search-form">
+            <div class="form-container">
+                <div class="form-group">
+                    <label for="MACHIEN_PM">机台 PM:</label>
+                    <input type="text" id="MACHIEN_PM" name="MACHIEN_PM" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="MACHINE_NMAE">机台名称:</label>
+                    <input type="text" id="MACHINE_NMAE" name="MACHINE_NMAE" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="PID">大板码:</label>
+                    <input type="text" id="PID" name="PID" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="WORK_ORDER">工单:</label>
+                    <input type="text" id="WORK_ORDER" name="WORK_ORDER" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="PROCESS_NAME">制程名称:</label>
+                    <input type="text" id="PROCESS_NAME" name="PROCESS_NAME" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="STEP">流程顺序:</label>
+                    <input type="text" id="STEP" name="STEP" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="PN">料号:</label>
+                    <input type="text" id="PN" name="PN" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="WKTYPE">投产类型:</label>
+                    <input type="text" id="WKTYPE" name="WKTYPE" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="sort">排序字段:</label>
+                    <select id="sort" name="sort" class="form-control">
+                        <option value="UPDATE_TIME">更新时间</option>
+                        <option value="MACHIEN_PM">机台 PM</option>
+                        <option value="MACHINE_NMAE">机台名称</option>
+                        <option value="PID">大板码</option>
+                        <option value="WORK_ORDER">工单</option>
+                        <option value="PROCESS_NAME">制程名称</option>
+                        <option value="STEP">流程顺序</option>
+                        <option value="PN">料号</option>
+                        <option value="WKTYPE">投产类型</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="order">排序顺序:</label>
+                    <select id="order" name="order" class="form-control">
+                        <option value="DESC">降序</option>
+                        <option value="ASC">升序</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start_time">起始时间:</label>
+                    <input type="datetime-local" id="start_time" name="start_time" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="end_time">结束时间:</label>
+                    <input type="datetime-local" id="end_time" name="end_time" class="form-control">
+                </div>
+                <input type="hidden" id="page" name="page" value="1">
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">查询</button>
+                <button id="export-button" class="btn btn-secondary">导出查询结果</button>
+            </div>
+        </form>
+        <table id="records-table" class="table">
+            <thead>
+                <tr>
+                    <th>机台 PM</th>
+                    <th>机台名称</th>
+                    <th>大板码</th>
+                    <th>工单</th>
+                    <th>制程名称</th>
+                    <th>流程顺序</th>
+                    <th>料号</th>
+                    <th>投产类型</th>
+                    <th>更新时间</th>
+                    <th>机台与制程匹配</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 数据将通过 JavaScript 动态填充 -->
+            </tbody>
+        </table>
+        <nav aria-label="Page navigation">
+            <ul id="pagination" class="pagination justify-content-center"></ul>
+        </nav>
+    </div>
+
+    <!-- 引入 Bootstrap JavaScript -->
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script>
+        var server_url = "{{ server_url }}";
+        const searchForm = document.getElementById('search-form');
+        const recordsTable = document.getElementById('records-table');
+        const pagination = document.getElementById('pagination');
+        const pageInput = document.getElementById('page');
+        const exportButton = document.getElementById('export-button');
+
+        // 格式化时间函数
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // 设置默认时间范围为今天凌晨到现在
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const formattedStart = startOfDay.toISOString().slice(0, 16);
+        const formattedEnd = now.toISOString().slice(0, 16);
+        document.getElementById('start_time').value = formattedStart;
+        document.getElementById('end_time').value = formattedEnd;
+
+        searchForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(searchForm);
+            const queryParams = new URLSearchParams(formData).toString();
+            const url = server_url + `/production_records?${queryParams}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // 清空表格内容
+                recordsTable.tBodies[0].innerHTML = '';
+
+                // 填充表格数据，格式化时间
+                data.records.forEach((record) => {
+                    const row = recordsTable.tBodies[0].insertRow();
+                    row.insertCell().textContent = record.MACHIEN_PM;
+                    row.insertCell().textContent = record.MACHINE_NMAE;
+                    row.insertCell().textContent = record.PID;
+                    row.insertCell().textContent = record.WORK_ORDER;
+                    row.insertCell().textContent = record.PROCESS_NAME;
+                    row.insertCell().textContent = record.STEP;
+                    row.insertCell().textContent = record.PN;
+                    row.insertCell().textContent = record.WKTYPE;
+                    row.insertCell().textContent = formatDate(record.UPDATE_TIME);
+
+                    // 判断机台名称和制程名称是否有至少两个相同汉字
+                    const machineName = record.MACHINE_NMAE;
+                    const processName = record.PROCESS_NAME;
+                    // 使用正则表达式匹配汉字
+                    const machineHanzi = machineName.match(/[\u4e00-\u9fa5]/g) || [];
+                    const processHanzi = processName.match(/[\u4e00-\u9fa5]/g) || [];
+                    let sameChars = [];
+                    for (let i = 0; i < machineHanzi.length; i++) {
+                        const char = machineHanzi[i];
+                        if (processHanzi.includes(char) &&!sameChars.includes(char)) {
+                            sameChars.push(char);
+                        }
+                    }
+                    const matchCell = row.insertCell();
+                    if (sameChars.length >= 2) {
+                        matchCell.textContent = 'OK';
+                        matchCell.style.backgroundColor = 'green';
+                        matchCell.style.color = 'white';
+                    } else {
+                        matchCell.textContent = '不良';
+                        matchCell.style.backgroundColor = 'red';
+                        matchCell.style.color = 'white';
+                    }
+                });
+
+                // 生成分页导航
+                pagination.innerHTML = '';
+                const totalPages = data.total_pages;
+                const currentPage = data.current_page;
+                const visiblePages = 5; // 显示的页码数量
+
+                // 首页按钮
+                const firstButton = document.createElement('li');
+                firstButton.classList.add('page-item');
+                const firstLink = document.createElement('a');
+                firstLink.classList.add('pagination-button');
+                firstLink.textContent = '首页';
+                firstLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) {
+                        pageInput.value = 1;
+                        searchForm.dispatchEvent(new Event('submit'));
+                        // 页面切换滚动到顶部
+                        window.scrollTo(0, 0);
+                    }
+                });
+                firstButton.appendChild(firstLink);
+                pagination.appendChild(firstButton);
+
+                // 上一页按钮
+                const prevButton = document.createElement('li');
+                prevButton.classList.add('page-item');
+                const prevLink = document.createElement('a');
+                prevLink.classList.add('pagination-button');
+                prevLink.textContent = '上一页';
+                prevLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) {
+                        pageInput.value = currentPage - 1;
+                        searchForm.dispatchEvent(new Event('submit'));
+                        // 页面切换滚动到顶部
+                        window.scrollTo(0, 0);
+                    }
+                });
+                prevButton.appendChild(prevLink);
+                pagination.appendChild(prevButton);
+
+                // 计算开始和结束页码
+                let startPage = Math.max(1, currentPage - Math.floor(visiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + visiblePages - 1);
+                if (endPage - startPage < visiblePages - 1) {
+                    startPage = Math.max(1, endPage - visiblePages + 1);
+                }
+
+                // 添加页码按钮
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageLi = document.createElement('li');
+                    pageLi.classList.add('page-item');
+                    const pageLink = document.createElement('a');
+                    pageLink.classList.add('pagination-button');
+                    if (i === currentPage) {
+                        pageLink.classList.add('active-page');
+                    }
+                    pageLink.textContent = i;
+                    pageLink.href = '#';
+                    pageLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        pageInput.value = i;
+                        searchForm.dispatchEvent(new Event('submit'));
+                        // 页面切换滚动到顶部
+                        window.scrollTo(0, 0);
+                    });
+                    pageLi.appendChild(pageLink);
+                    pagination.appendChild(pageLi);
+                }
+
+                // 下一页按钮
+                const nextButton = document.createElement('li');
+                nextButton.classList.add('page-item');
+                const nextLink = document.createElement('a');
+                nextLink.classList.add('pagination-button');
+                nextLink.textContent = '下一页';
+                nextLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages) {
+                        pageInput.value = currentPage + 1;
+                        searchForm.dispatchEvent(new Event('submit'));
+                        // 页面切换滚动到顶部
+                        window.scrollTo(0, 0);
+                    }
+                });
+                nextButton.appendChild(nextLink);
+                pagination.appendChild(nextButton);
+
+                // 尾页按钮
+                const lastButton = document.createElement('li');
+                lastButton.classList.add('page-item');
+                const lastLink = document.createElement('a');
+                lastLink.classList.add('pagination-button');
+                lastLink.textContent = '尾页';
+                lastLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (currentPage < totalPages) {
+                        pageInput.value = totalPages;
+                        searchForm.dispatchEvent(new Event('submit'));
+                        // 页面切换滚动到顶部
+                        window.scrollTo(0, 0);
+                    }
+                });
+                lastButton.appendChild(lastLink);
+                pagination.appendChild(lastButton);
+
+                // 跳转输入框
+                const jumpDiv = document.createElement('div');
+                jumpDiv.classList.add('page-jump');
+                const jumpInput = document.createElement('input');
+                jumpInput.type = 'number';
+                jumpInput.min = 1;
+                jumpInput.max = totalPages;
+                jumpInput.placeholder = '输入页码跳转';
+                jumpInput.classList.add('form-control', 'd-inline', 'w-auto');
+                const jumpButton = document.createElement('button');
+                jumpButton.textContent = '跳转';
+                jumpButton.classList.add('btn', 'btn-primary','ms-2');
+                const errorMessage = document.createElement('span');
+                errorMessage.classList.add('error-message');
+                jumpButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const inputPage = parseInt(jumpInput.value);
+                    if (isNaN(inputPage) || inputPage < 1 || inputPage > totalPages) {
+                        errorMessage.textContent = '输入的页码无效，请输入 1 到' + totalPages + '之间的数字。';
+                    } else {
+                        errorMessage.textContent = '';
+                        pageInput.value = inputPage;
+                        searchForm.dispatchEvent(new Event('submit'));
+                        // 页面切换滚动到顶部
+                        window.scrollTo(0, 0);
+                    }
+                });
+                jumpDiv.appendChild(jumpInput);
+                jumpDiv.appendChild(jumpButton);
+                jumpDiv.appendChild(errorMessage);
+                const jumpLi = document.createElement('li');
+                jumpLi.classList.add('page-item');
+                jumpLi.appendChild(jumpDiv);
+                pagination.appendChild(jumpLi);
+
+            } catch (error) {
+                console.error('查询出错:', error);
+            }
+        });
+
+        exportButton.addEventListener('click', async () => {
+            const formData = new FormData(searchForm);
+            const queryParams = new URLSearchParams(formData).toString();
+            console.log(queryParams)
+            const url = server_url + `/production_records/all?${queryParams}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const headers = Array.from(recordsTable.querySelectorAll('th')).map(th => th.textContent.trim());
+                const rows = data.records.map(record => {
+                    const cells = [];
+                    cells.push(record.MACHIEN_PM);
+                    cells.push(record.MACHINE_NMAE);
+                    cells.push(record.PID);
+                    cells.push(record.WORK_ORDER);
+                    cells.push(record.PROCESS_NAME);
+                    cells.push(record.STEP);
+                    cells.push(record.PN);
+                    cells.push(record.WKTYPE);
+                    cells.push(formatDate(record.UPDATE_TIME));
+
+                    const machineName = record.MACHINE_NMAE;
+                    const processName = record.PROCESS_NAME;
+                    const machineHanzi = machineName.match(/[\u4e00-\u9fa5]/g) || [];
+                    const processHanzi = processName.match(/[\u4e00-\u9fa5]/g) || [];
+                    let sameChars = [];
+                    for (let i = 0; i < machineHanzi.length; i++) {
+                        const char = machineHanzi[i];
+                        if (processHanzi.includes(char) &&!sameChars.includes(char)) {
+                            sameChars.push(char);
+                        }
+                    }
+                    if (sameChars.length >= 2) {
+                        cells.push('OK');
+                    } else {
+                        cells.push('不良');
+                    }
+                    return cells;
+                });
+
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += headers.join(",") + "\n";
+                rows.forEach(row => {
+                    csvContent += row.join(",") + "\n";
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "production_records.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error('导出出错:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>

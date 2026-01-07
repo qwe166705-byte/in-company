@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-X-admin2.2</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <script type="text/javascript" src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        /* 修改layui下拉菜单鼠标滑过项的背景色 */
+        .layui-form-select dl dd:hover {
+            background-color: #009688;
+        }
+
+        /* 修改layui下拉菜单选中项的背景色 */
+        .layui-form-select dl dd.layui-this {
+            background-color: #009688;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-row">
+        <form class="layui-form">
+            <div class="layui-form-item">
+                <label for="machine_pm" class="layui-form-label">机台编号</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="machine_pm" name="machine_pm" value="{{ machine_pm }}" autocomplete="off"
+                           class="layui-input"></div>
+                <div class="layui-form-mid layui-word-aux">{{ machine_name if machine_pm else '请选择机台编号' }}</div>
+            </div>
+            <div class="layui-form-item">
+                <label for="camera_ip" class="layui-form-label">相机IP</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="camera_ip" name="camera_ip" autocomplete="off" class="layui-input"></div>
+                <div class="layui-form-mid layui-word-aux">相机的IP地址</div>
+            </div>
+            <div class="layui-form-item">
+                <label for="camera_port" class="layui-form-label">相机端口</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="camera_port" name="camera_port" autocomplete="off" class="layui-input"></div>
+            </div>
+            <div class="layui-form-item">
+                <label for="camera_type" class="layui-form-label">相机类型</label>
+                <div class="layui-input-inline">
+                    <select id="camera_type" name="camera_type" class="layui-input">
+                        <option value="海康" selected>海康</option>
+                        <option value="康耐视">康耐视</option>
+                        <option value="奧普特">奧普特</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">选择相机的型号</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label for="camera_position" class="layui-form-label">相机位置</label>
+                <div class="layui-input-inline">
+                    <select id="camera_position" name="camera_position" class="layui-input">
+                        <option value="IN">IN</option>
+                        <option value="OUT">OUT</option>
+                        <option value="IN_L" selected>IN_L</option>
+                        <option value="IN_R">IN_R</option>
+                        <option value="OUT_L">OUT_L</option>
+                        <option value="OUT_R">OUT_R</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">选择相机的位置</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label for="camera_agreement" class="layui-form-label">相机的协议</label>
+                <div class="layui-input-inline">
+                    <select id="camera_agreement" name="camera_agreement" class="layui-input">
+                        <option value="TCP" selected>TCP</option>
+                        <option value="UDP">UDP</option>
+                        <option value="MODBUS_TCP">MODBUS_TCP</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">选择相机的协议</div>
+            </div>
+            <div class="layui-form-item">
+                <label for="L_repass" class="layui-form-label"></label>
+                <button class="layui-btn" lay-filter="add" lay-submit="">增加</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'layer', 'jquery'], function () {
+        $ = layui.jquery;
+        var form = layui.form,
+            layer = layui.layer;
+        // Flask 渲染后传递的变量
+        var server_url = "{{ server_url }}";
+        // 监听表单提交事件
+        form.on('submit(add)', function (data) {
+            // 打印提交的表单数据
+            console.log('提交的表单数据:', data.field);
+            // 发起Ajax请求，提交表单数据到后端
+            $.ajax({
+                url: server_url + '/add_camera_info',  // 请求的后端URL
+                type: 'POST',  // 请求方式
+                contentType: 'application/json',  // 设置请求内容类型
+                dataType: 'json',  // 预期的服务器响应数据类型
+                data: JSON.stringify(data.field),  // 将表单数据转为JSON字符串发送
+                success: function (response) {
+                    // 请求成功时的回调
+                    if (response.message) {
+                        layer.alert("增加成功", {
+                            icon: 6  // 成功图标
+                        }, function () {
+                            xadmin.close();  // 关闭当前iframe窗口
+                            xadmin.father_reload();  // 刷新父窗口
+                        });
+                    } else if (response.error) {
+                        // 如果后端返回了错误信息
+                        layer.alert(response.error, {
+                            icon: 5  // 错误图标
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 请求失败时的回调
+                    layer.alert("请求失败，请稍后重试", {
+                        icon: 5  // 错误图标
+                    });
+                }
+            });
+
+            return false;  // 阻止表单默认提交
+        });
+    });
+</script>
+</body>
+
+</html>

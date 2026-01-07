@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日志查询</title>
+    <script src="../static/js/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+       .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 1500px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+       .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+       .form-container label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+       .form-container input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+       .form-container input[type="text"],
+       .form-container input[type="datetime-local"] {
+            font-size: 14px;
+        }
+
+        button {
+            margin-top: 23px;
+            padding: 9px 20px;
+            background-color: #009688;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0a524b;
+        }
+
+       .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            table-layout: fixed; /* ✅ 加這行 */
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        td {
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        th {
+            min-width: 200px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* 分页样式 */
+       .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+       .pagination a {
+            padding: 8px 16px;
+            margin: 0 5px;
+            text-decoration: none;
+            background-color: #f4f4f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #333;
+        }
+
+       .pagination a:hover {
+            background-color: #ddd;
+        }
+
+       .pagination.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+       .pagination.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+            pointer-events: none; /* 禁止点击事件 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>IPC 日志查询</h1>
+
+        <form id="queryForm">
+            <div class="form-container">
+                <!-- 起始时间 -->
+                <div>
+                    <label for="start_time">起始时间:</label>
+                    <input type="datetime-local" id="start_time" name="start_time" value="{{ start_time or '' }}">
+                </div>
+
+                <!-- 结束时间 -->
+                <div>
+                    <label for="end_time">结束时间:</label>
+                    <input type="datetime-local" id="end_time" name="end_time" value="{{ end_time or '' }}">
+                </div>
+
+                <!-- 机台 PM -->
+                <div>
+                    <label for="machine_pm">机台 PM:</label>
+                    <input type="text" id="machine_pm" name="machine_pm" required>
+                </div>
+
+                <!-- 模糊筛选 -->
+                <div>
+                    <label for="message">模糊筛选:</label>
+                    <input type="text" id="message" name="message" value="{{ message or '' }}">
+                </div>
+                <!-- 查询按钮 -->
+                <div style="flex-shrink: 0;">
+                    <button type="button" id="queryButton">查询</button>
+                </div>
+                <!-- 导出按钮 -->
+                <div style="flex-shrink: 0;">
+                    <button type="button" id="exportButton" disabled>导出</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="errorMessage" class="error" style="display: none;"></div>
+
+        <h2 id="resultTitle" style="display: none;">查询结果</h2>
+        <table id="resultTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>时间</th>
+                    <th>日志信息</th>
+                </tr>
+            </thead>
+            <tbody id="resultBody"></tbody>
+        </table>
+        <!-- 分页控件 -->
+        <div class="pagination" id="pagination"></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const queryButton = document.getElementById('queryButton');
+                const exportButton = document.getElementById('exportButton');
+                const queryForm = document.getElementById('queryForm');
+                const resultTable = document.getElementById('resultTable');
+                const resultBody = document.getElementById('resultBody');
+                const pagination = document.getElementById('pagination');
+                const resultTitle = document.getElementById('resultTitle');
+                const errorMessageDiv = document.getElementById('errorMessage');
+
+                let allLogs = []; // 存储从后端获取的所有日志数据
+                let currentPage = 1; // 当前页码
+                let totalPages = 1; // 总页数
+                const itemsPerPage = 30; // 每页显示的项目数
+
+                // 获取当前系统时间
+                const now = new Date();
+                // 设置起始时间为当前系统时间的凌晨
+                const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+                const startInput = document.getElementById('start_time');
+                const endInput = document.getElementById('end_time');
+
+                // 格式化日期时间为符合 input datetime-local 的格式
+                const formatDateTime = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                };
+
+                startInput.value = formatDateTime(startDate);
+                endInput.value = formatDateTime(now);
+
+                queryButton.addEventListener('click', function () {
+                    // 先清空错误信息
+                    errorMessageDiv.textContent = '';
+                    errorMessageDiv.style.display = 'none';
+                    // 收集表单数据
+                    const formData = new FormData(queryForm);
+                    const data = {};
+                    formData.forEach((value, key) => {
+                        data[key] = value;
+                    });
+
+                    // 将数据转换为查询字符串
+                    const queryParams = new URLSearchParams(data).toString();
+                    const url = `/ipc_log_info?${queryParams}`;
+
+                    // 发送 GET 请求
+                    fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                   .then(response => response.json())
+                   .then(responseData => {
+                        if ('error' in responseData) {
+                            // 如果后端返回了错误信息，显示在页面上
+                            errorMessageDiv.textContent = responseData.error;
+                            errorMessageDiv.style.display = 'block';
+                            resultTable.style.display = 'none';
+                            resultTitle.style.display = 'none';
+                            exportButton.disabled = true;
+                        } else {
+                            allLogs = responseData.logs;
+                            totalPages = Math.ceil(allLogs.length / itemsPerPage);
+                            currentPage = 1;
+                            updateTable();
+                            updatePagination();
+                            resultTable.style.display = 'block';
+                            resultTitle.style.display = 'block';
+                            errorMessageDiv.style.display = 'none';
+                            exportButton.disabled = false;
+                        }
+                    })
+                   .catch(error => {
+                        // 如果请求过程中出错，显示错误信息
+                        errorMessageDiv.textContent = '请求过程中出错，请检查网络连接或稍后重试';
+                        errorMessageDiv.style.display = 'block';
+                        resultTable.style.display = 'none';
+                        resultTitle.style.display = 'none';
+                        exportButton.disabled = true;
+                        console.error('请求失败:', error);
+                    });
+                });
+
+                exportButton.addEventListener('click', function () {
+                    const ws = XLSX.utils.json_to_sheet(allLogs);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, '日志数据');
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const filename = `${year}${month}${day}.xls`;
+                    XLSX.writeFile(wb, filename);
+                });
+
+                function updateTable() {
+                    resultBody.innerHTML = '';
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    const currentPageLogs = allLogs.slice(startIndex, endIndex);
+
+                    currentPageLogs.forEach(log => {
+                        const row = document.createElement('tr');
+                        const timestampCell = document.createElement('td');
+                        const messageCell = document.createElement('td');
+
+                        timestampCell.textContent = log.timestamp;
+
+                        // ✅ 用 <pre> 來顯示 log，保留格式 + 自動換行
+                        const pre = document.createElement('pre');
+                        pre.textContent = log.message;
+                        pre.style.margin = 0;
+                        pre.style.whiteSpace = 'pre-wrap';   // 保留換行，自動折行
+                        pre.style.wordBreak = 'break-word';  // 長字串自動斷行
+                        pre.style.backgroundColor = '#e6f4ea'; // 淡綠背景（可調）
+                        pre.style.padding = '8px';
+                        pre.style.borderRadius = '4px';
+                        pre.style.lineHeight = '1.5';
+                        pre.style.fontSize = '13px';
+                        pre.style.maxHeight = '300px';       // 限制高度，太長時可滾動
+                        pre.style.overflowY = 'auto';
+
+                        messageCell.appendChild(pre);
+
+                        row.appendChild(timestampCell);
+                        row.appendChild(messageCell);
+                        resultBody.appendChild(row);
+                    });
+                }
+
+                function updatePagination() {
+                    pagination.innerHTML = '';
+                    const firstPageButton = document.createElement('a');
+                    firstPageButton.textContent = '首页';
+                    firstPageButton.href = '#';
+                    firstPageButton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        currentPage = 1;
+                        updateTable();
+                        updatePagination();
+                    });
+                    if (currentPage === 1) {
+                        firstPageButton.classList.add('disabled');
+                    }
+                    pagination.appendChild(firstPageButton);
+
+                    const prevPageButton = document.createElement('a');
+                    prevPageButton.textContent = '上一页';
+                    prevPageButton.href = '#';
+                    prevPageButton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        if (currentPage > 1) {
+                            currentPage--;
+                            updateTable();
+                            updatePagination();
+                        }
+                    });
+                    if (currentPage === 1) {
+                        prevPageButton.classList.add('disabled');
+                    }
+                    pagination.appendChild(prevPageButton);
+
+                    const pageInfo = document.createElement('span');
+                    pageInfo.textContent = `第 ${currentPage} 页 / 共 ${totalPages} 页`;
+                    pageInfo.style.marginTop = '8px';
+                    pagination.appendChild(pageInfo);
+
+                    const nextPageButton = document.createElement('a');
+                    nextPageButton.textContent = '下一页';
+                    nextPageButton.href = '#';
+                    nextPageButton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        if (currentPage < totalPages) {
+                            currentPage++;
+                            updateTable();
+                            updatePagination();
+                        }
+                    });
+                    if (currentPage === totalPages) {
+                        nextPageButton.classList.add('disabled');
+                    }
+                    pagination.appendChild(nextPageButton);
+
+                    const lastPageButton = document.createElement('a');
+                    lastPageButton.textContent = '末页';
+                    lastPageButton.href = '#';
+                    lastPageButton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        currentPage = totalPages;
+                        updateTable();
+                        updatePagination();
+                    });
+                    if (currentPage === totalPages) {
+                        lastPageButton.classList.add('disabled');
+                    }
+                    pagination.appendChild(lastPageButton);
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>

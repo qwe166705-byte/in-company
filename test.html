@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centered Popup</title>
+    <style>
+        /* 按钮样式 */
+        #openPopupBtn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 弹出框容器样式 */
+        #popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 触发按钮 -->
+    <button id="openPopupBtn">打开弹出框</button>
+
+    <!-- 弹出框 -->
+    <div id="popup" tabindex="0">
+        <h2>这是一个弹出框</h2>
+        <p>点击弹出框外部可关闭。</p>
+    </div>
+
+    <script>
+        // 获取按钮和弹出框元素
+        const openPopupBtn = document.getElementById('openPopupBtn');
+        const popup = document.getElementById('popup');
+
+        // 为按钮添加点击事件监听器
+        openPopupBtn.addEventListener('click', function () {
+            // 显示弹出框
+            popup.style.display = 'block';
+            // 聚焦到弹出框
+            popup.focus();
+        });
+
+        // 为弹出框添加失去焦点事件监听器
+        popup.addEventListener('blur', function () {
+            // 隐藏弹出框
+            popup.style.display = 'none';
+        });
+    </script>
+</body>
+
+</html>

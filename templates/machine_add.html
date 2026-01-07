@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-X-admin2.2</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <script type="text/javascript" src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        /* 修改layui下拉菜单鼠标滑过项的背景色 */
+        
+        .layui-form-select dl dd:hover {
+            background-color: #009688;
+        }
+        /* 修改layui下拉菜单选中项的背景色 */
+        
+        .layui-form-select dl dd.layui-this {
+            background-color: #009688;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <label for="machine_pm" class="layui-form-label">机台编号</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="machine_pm" name="machine_pm" autocomplete="off" class="layui-input"></div>
+                    <div class="layui-form-mid layui-word-aux">机台的唯一标识</div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="machine_name" class="layui-form-label">机台名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="machine_name" name="machine_name" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">机台的名称信息</div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="machine_ip" class="layui-form-label">PLC/LOG IP</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="machine_ip" name="machine_ip" autocomplete="off" class="layui-input"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="machine_port" class="layui-form-label">端口</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="machine_port" name="machine_port" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">纯数字、或空</div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="ipc_ip" class="layui-form-label">IPC IP</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="ipc_ip" name="ipc_ip" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="terminal_id" class="layui-form-label">过站条码</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="terminal_id" name="terminal_id" autocomplete="off" class="layui-input"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="source_name" class="layui-form-label">数据源</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="source_name" name="source_name" autocomplete="off" class="layui-input"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="machine_type" class="layui-form-label">类型</label>
+                    <div class="layui-input-inline">
+                        <select id="machine_type" name="machine_type">
+                        <option value="LOG" selected>LOG</option>
+                        <option value="DB">DB</option>
+                        <option value="前后相机">前后相机</option>
+                        <option value="前后相机DCN">前后相机DCN</option>
+                        <option value="前或后相机">前或后相机</option>
+                        <option value="相机LOG">相机LOG</option>
+                        <option value="AOBAO">AOBAO</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="is_65_upload" class="layui-form-label">是否65上传</label>
+                    <div class="layui-input-inline">
+                        <select id="is_65_upload" name="is_65_upload">
+                        <option value="True" selected>True</option>
+                        <option value="False">False</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="is_upload_working_rate" class="layui-form-label">稼动率</label>
+                    <div class="layui-input-inline">
+                        <select id="is_upload_working_rate" name="is_upload_working_rate">
+                        <option value="True">True</option>
+                        <option value="False" selected>False</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="data_cleaning_flag" class="layui-form-label">是否运算</label>
+                    <div class="layui-input-inline">
+                        <select id="data_cleaning_flag" name="data_cleaning_flag">
+                        <option value="False">False</option>
+                        <option value="True" selected>True</option>
+                    </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="read_interval" class="layui-form-label">间隔时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="read_interval" name="read_interval" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="read_time_out" class="layui-form-label">运算超时</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="read_time_out" name="read_time_out" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="percentage" class="layui-form-label">时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="percentage" name="percentage" autocomplete="off" class="layui-input"></div>
+                </div>
+                <div class="layui-form-item">
+                    <button class="layui-btn" lay-filter="add" lay-submit="">增加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        layui.use(['form', 'layer', 'jquery'], function() {
+            $ = layui.jquery;
+            var form = layui.form,
+                layer = layui.layer;
+            // Flask 渲染后传递的变量
+            var server_url = "{{ server_url }}";
+            var emp_no = "{{ emp_no }}";
+            // 监听表单提交事件
+            form.on('submit(add)', function(data) {
+                // 打印提交的表单数据
+                console.log('提交的表单数据:', data.field);
+                data.field.emp_no = emp_no;
+                // 发起Ajax请求，提交表单数据到后端
+                $.ajax({
+                    url: server_url + '/add_machine_info', // 请求的后端URL
+                    type: 'POST', // 请求方式
+                    contentType: 'application/json', // 设置请求内容类型
+                    dataType: 'json', // 预期的服务器响应数据类型
+                    data: JSON.stringify(data.field), // 将表单数据转为JSON字符串发送
+                    success: function(response) {
+                        // 请求成功时的回调
+                        if (response.message) {
+                            layer.alert("增加成功", {
+                                icon: 6 // 成功图标
+                            }, function() {
+                                xadmin.close(); // 关闭当前iframe窗口
+                                xadmin.father_reload(); // 刷新父窗口
+                            });
+                        } else if (response.error) {
+                            // 如果后端返回了错误信息
+                            layer.alert(response.error, {
+                                icon: 5 // 错误图标
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        // 请求失败时的回调
+                        layer.alert("请求失败，请稍后重试", {
+                            icon: 5 // 错误图标
+                        });
+                    }
+                });
+
+                return false; // 阻止表单默认提交
+            });
+        });
+    </script>
+</body>
+
+</html>

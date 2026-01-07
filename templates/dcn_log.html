@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日志查询</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+     .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 1500px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+     .form-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+     .form-container label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+     .form-container input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+     .form-container input[type="text"],.form-container input[type="datetime-local"] {
+            font-size: 14px;
+        }
+
+        button {
+            margin-top: 23px;
+            padding: 9px 20px;
+            background-color: #009688;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0a524b;
+        }
+
+     .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* 分页样式 */
+     .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+     .pagination a {
+            padding: 8px 16px;
+            margin: 0 5px;
+            text-decoration: none;
+            background-color: #f4f4f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #333;
+        }
+
+     .pagination a:hover {
+            background-color: #ddd;
+        }
+
+     .pagination.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+    .pagination .disabled {
+        color: #ccc;
+        cursor: not-allowed;
+        pointer-events: none; /* 禁止点击事件 */
+    }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>DCN 日志查询</h1>
+
+    <form method="GET" action="/dcn_log">
+        <div class="form-container">
+            <!-- 起始时间 -->
+            <div>
+                <label for="start_time">起始时间:</label>
+                <input type="datetime-local" id="start_time" name="start_time" value="{{ start_time or '' }}">
+            </div>
+
+            <!-- 结束时间 -->
+            <div>
+                <label for="end_time">结束时间:</label>
+                <input type="datetime-local" id="end_time" name="end_time" value="{{ end_time or '' }}">
+            </div>
+
+            <!-- IP地址 -->
+            <div>
+                <label for="dcn_ip">DCN IP:</label>
+                <input type="text" id="dcn_ip" name="dcn_ip" value="{{ dcn_ip or '' }}">
+            </div>
+
+            <!-- 工单ID -->
+            <div>
+                <label for="work_order_id">模糊筛选:</label>
+                <input type="text" id="work_order_id" name="work_order_id" value="{{ work_order_id or '' }}">
+            </div>
+            <input type="hidden" name="page" value="0">
+            <!-- 查询按钮 -->
+            <div style="flex-shrink: 0;">
+                <button type="submit">查询</button>
+            </div>
+        </div>
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if logs %}
+        <h2>查询结果</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>时间</th>
+                <th>DCN IP</th>
+                <th>DCN服务器地址</th>
+                <th>日志信息</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for log in logs %}
+                {% if 'OK' in log['message'] %}
+                    <tr style="background-color: #086e01;color: white;height: 10px;font-size: 14px">
+                {% elif 'NG' in log['message'] or 'ERR' in log['message'] %}
+                    <tr style="background-color: #ff6c6c;color: white;height: 10px;font-size: 14px">
+                {% else %}
+                    <tr style="font-size: 14px;height: 10px">
+                {% endif %}
+                    <td>{{ log['date_time'] }}</td>
+                    <td>{{ log['dcn_ip'] }}</td>
+                    <td>{{ log['dcn_server_host'] }}</td>
+                    <td>{{ log['message'] }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <!-- 分页控件 -->
+        <div class="pagination">
+            <a href="/dcn_log?page=1" class="{% if page == 1 %}disabled{% endif %}">首页</a>
+            <a href="/dcn_log?page={{ page - 1 }}&start_time={{ request.args.get('start_time') }}&end_time={{ request.args.get('end_time') }}&dcn_ip={{ request.args.get('dcn_ip') }}&work_order_id={{ request.args.get('work_order_id') }}" class="{% if page == 1 %}disabled{% endif %}">上一页</a>
+            <span style="margin-top: 8px;">第 {{ page }} 页 / 共 {{ total_pages }} 页</span>
+            <a href="/dcn_log?page={{ page + 1 }}&start_time={{ request.args.get('start_time') }}&end_time={{ request.args.get('end_time') }}&dcn_ip={{ request.args.get('dcn_ip') }}&work_order_id={{ request.args.get('work_order_id') }}" class="{% if page == total_pages %}disabled{% endif %}">下一页</a>
+            <a href="/dcn_log?page={{ total_pages }}&start_time={{ request.args.get('start_time') }}&end_time={{ request.args.get('end_time') }}&dcn_ip={{ request.args.get('dcn_ip') }}&work_order_id={{ request.args.get('work_order_id') }}" class="{% if page == total_pages %}disabled{% endif %}">末页</a>
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

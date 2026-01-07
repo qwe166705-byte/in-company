@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>位置代码查询</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #2f3d48;
+            margin-top: 40px;
+            font-size: 2em;
+            font-weight: 600;
+        }
+
+        .container {
+            background: #fff;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .query-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .input-field {
+            padding: 14px;
+            margin-right: 10px;
+            width: 30%;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #009688;
+            outline: none;
+        }
+
+        .button {
+            padding: 14px 28px;
+            background-color: #009688;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .button:hover {
+            background-color: #0a524b;
+            transform: scale(1.05);
+        }
+
+        #addForm {
+            display: none;
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+
+        .add-form input {
+            padding: 14px;
+            margin-bottom: 16px;
+            width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .location-table {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+
+        .location-table th, .location-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .location-table th {
+            background-color: #009688;
+            color: white;
+        }
+
+        .location-table td input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 90%;
+            text-align: center;
+            outline: none;
+        }
+
+        .location-table td input[readonly] {
+            border: none;
+            background-color: #f5f5f5;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .edit-button, .delete-button {
+            padding: 8px 16px;
+            background-color: #009688;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .delete-button {
+            background-color: #f44336;
+        }
+
+        .edit-button:hover {
+            background-color: #0a524b;
+        }
+
+        .delete-button:hover {
+            background-color: #e53935;
+        }
+
+        /* 新增提示框样式 */
+        #successMessage {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50; /* 默认绿色 */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 18px;
+            display: none;
+            z-index: 9999;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #errorMessage {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f44336; /* 错误时为红色 */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 18px;
+            display: none;
+            z-index: 9999;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>位置代码查询</h1>
+
+<div class="container">
+    <div class="query-container">
+        <input type="text" id="codeInput" class="input-field" placeholder="请输入位置代码">
+        <input type="text" id="nameInput" class="input-field" placeholder="请输入名称">
+        <button class="button" onclick="searchLocation()">查询</button>
+        <button class="button" onclick="toggleAddForm()">新增</button>
+    </div>
+
+    <div id="addForm" class="add-form">
+        <h3>新增位置</h3>
+        <input type="text" id="newCodeInput" class="input-field" placeholder="输入新增位置代码">
+        <input type="text" id="newNameInput" class="input-field" placeholder="输入新增名称">
+        <button class="button" onclick="addNewLocation()">提交</button>
+    </div>
+</div>
+
+<h2>已查询位置代码和名称：</h2>
+<table id="locationTable" class="location-table">
+    <thead>
+    <tr>
+        <th>位置代码</th>
+        <th>名称</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<!-- 提示框 -->
+<div id="successMessage">新增成功！</div>
+<div id="errorMessage">新增失败，请输入完整信息！</div>
+
+<script>
+    var server_url = {{ server_url|tojson }};
+    let locations = {{ locations|tojson }};
+
+    function searchLocation() {
+        const code = document.getElementById('codeInput').value.trim();
+        const name = document.getElementById('nameInput').value.trim();
+
+        let result = [];
+        if (code || name) {
+            result = locations.filter(location =>
+                (code && location.code === code) ||
+                (name && location.name === name)
+            );
+        } else {
+            result = locations;
+        }
+
+        updateLocationTable(result);
+    }
+
+    function updateLocationTable(locations) {
+        const tableBody = document.getElementById('locationTable').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = '';
+
+        locations.forEach((location, index) => {
+            const row = tableBody.insertRow();
+            const cell1 = row.insertCell(0);
+            const cell2 = row.insertCell(1);
+            const cell3 = row.insertCell(2);
+            const cell4 = row.insertCell(3); // For hidden id
+
+            cell1.innerHTML = `<input type="text" value="${location.code}" readonly class="read-only" onchange="updateLocation(${index}, 'code', this.value)">`;
+            cell2.innerHTML = `<input type="text" value="${location.name}" readonly class="read-only" onchange="updateLocation(${index}, 'name', this.value)">`;
+            cell4.innerHTML = `<input type="hidden" value="${location.id}" class="hidden-id">`;
+            cell3.innerHTML = `
+                    <div class="button-container">
+                        <button class="edit-button" onclick="toggleEdit(${index}, this)">编辑</button>
+                        <button class="delete-button" onclick="deleteLocation(${index})">删除</button>
+                    </div>
+                `;
+        });
+    }
+
+    function updateLocation(index, data) {
+        const url = server_url + '/update_location_info';  // 替换为你的服务器 URL
+        fetch(url, {
+            method: 'POST',  // 使用 POST 方法
+            headers: {
+                'Content-Type': 'application/json',  // 设置请求头为 JSON 格式
+            },
+            body: JSON.stringify(data)  // 将数据转换为 JSON 字符串
+        })
+            .then(response => response.json())  // 解析响应为 JSON
+            .then(result => {
+                if (result.message) {
+                    locations[index].code = data.location_code;
+                    locations[index].name = data.location_name;
+                    showMessage('success', '更新成功'); // 显示更新成功提示
+                } else if (result.error) {
+                    console.error('错误信息:', result.error);  // 打印错误信息
+                    showMessage('success', '更新失败'); // 显示更新失败提示
+                }
+            })
+            .catch(error => {
+                showMessage('error', '更新失败'); // 显示新增失败提示
+            });
+    }
+
+
+    function deleteLocation(index) {
+        console.log('Deleting location:', locations[index]);
+        const url = server_url + '/del_location_info';  // 替换为你的服务器 URL
+        const data = {
+            location_id: locations[index].id  // 替换为实际的 location_id
+        }
+        fetch(url, {
+                method: 'POST',  // 使用 POST 方法
+                headers: {
+                    'Content-Type': 'application/json',  // 设置请求头为 JSON 格式
+                },
+                body: JSON.stringify(data)  // 将数据转换为 JSON 字符串
+            }
+        )
+            .then(response => response.json())  // 解析响应为 JSON
+            .then(result => {
+                    if (result.message) {
+                        showMessage('success', '删除成功'); // 显示删除成功提示
+                        locations.splice(index, 1);
+                        updateLocationTable(locations);
+                    } else if (result.error) {
+                        console.error('错误信息:', result.error);  // 打印错误信息
+                    }
+
+                }
+            )
+            .catch(error => {
+                    showMessage('error', '删除失败'); // 显示删除失败提示
+                }
+            );
+    }
+
+    function toggleEdit(index, button) {
+        const row = button.closest('tr');
+        const inputs = row.querySelectorAll('input');
+        const isEditing = inputs[0].hasAttribute('readonly');
+
+        if (isEditing) {
+            inputs.forEach(input => input.removeAttribute('readonly'));
+            button.innerText = '确认';
+        } else {
+            inputs.forEach(input => input.setAttribute('readonly', true));
+            button.innerText = '编辑';
+            // 获取并打印三个值
+            const codeValue = inputs[0].value;
+            const nameValue = inputs[1].value;
+            const idValue = inputs[2].value;  // 假设 ID 在 inputs[2] 中，具体位置根据实际情况修改
+            const data = {
+                location_code: codeValue,
+                location_name: nameValue,
+                location_id: idValue  // 假设 ID 在 inputs[2] 中，具体位置根据实际情况修改
+            }
+            // 更新数据
+            updateLocation(index, data);
+        }
+    }
+
+    function addNewLocation() {
+        const newCode = document.getElementById('newCodeInput').value.trim();
+        const newName = document.getElementById('newNameInput').value.trim();
+
+        if (newCode && newName) {
+            const url = server_url + '/add_location_info';  // 替换为你的服务器 URL
+            const data = {
+                location_code: newCode,  // 替换为实际的 location_code
+                location_name: newName  // 替换为实际的 location_name
+            };
+            fetch(url, {
+                method: 'POST',  // 使用 POST 方法
+                headers: {
+                    'Content-Type': 'application/json',  // 设置请求头为 JSON 格式
+                },
+                body: JSON.stringify(data)  // 将数据转换为 JSON 字符串
+            })
+                .then(response => response.json())  // 解析响应为 JSON
+                .then(result => {
+                    if (result.message) {
+                        locations.push({code: newCode, name: newName});
+                        showMessage('success', '新增成功'); // 显示新增成功提示
+                        document.getElementById('newCodeInput').value = '';
+                        document.getElementById('newNameInput').value = '';
+                        toggleAddForm();
+                        updateLocationTable(locations);
+                    } else if (result.error) {
+                        console.error('错误信息:', result.error);  // 打印错误信息
+                    }
+                })
+                .catch(error => {
+                    showMessage('error', '新增失败'); // 显示新增失败提示
+                });
+        } else {
+            showMessage('error', '新增失败'); // 显示新增失败提示
+        }
+    }
+
+    function showMessage(type, message) {
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+
+        if (type === 'success') {
+            successMessage.innerText = message;  // 修改成功消息内容
+            successMessage.style.display = 'block';
+            setTimeout(() => {
+                successMessage.style.opacity = 0;
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                    successMessage.style.opacity = 1;
+                }, 500);
+            }, 2000);
+        } else if (type === 'error') {
+            errorMessage.innerText = message;  // 修改错误消息内容
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.opacity = 0;
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                    errorMessage.style.opacity = 1;
+                }, 500);
+            }, 2000);
+        }
+    }
+
+
+    function toggleAddForm() {
+        const form = document.getElementById('addForm');
+        form.style.display = (form.style.display === 'block') ? 'none' : 'block';
+    }
+
+    window.onload = updateLocationTable(locations);
+</script>
+
+</body>
+</html>

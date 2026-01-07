@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-IPC</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <script type="text/javascript" src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+
+    <![endif]--></head>
+<style>
+    /* 修改layui下拉菜单鼠标滑过项的背景色 */
+    .layui-form-select dl dd:hover {
+        background-color: #009688;
+    }
+
+    /* 修改layui下拉菜单选中项的背景色 */
+    .layui-form-select dl dd.layui-this {
+        background-color: #009688;
+    }
+</style>
+
+<body>
+<div class="layui-fluid">
+    <div class="layui-row">
+        <form class="layui-form">
+            <div class="layui-form-item">
+                <label for="machine_pm" class="layui-form-label">机台编号</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="machine_pm" name="machine_pm" value="{{ machine_pm }}" autocomplete="off"
+                           class="layui-input"></div>
+                <div class="layui-form-mid layui-word-aux">{{ machine_name if machine_pm else '请选择机台编号' }}</div>
+            </div>
+            <div class="layui-form-item">
+                <label for="camera_ip" class="layui-form-label">相机IP</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="camera_ip" name="camera_ip" autocomplete="off" class="layui-input"
+                           value="{{ camera_ip }}"></div>
+                <div class="layui-form-mid layui-word-aux">相机的IP地址</div>
+            </div>
+            <div class="layui-form-item">
+                <label for="camera_port" class="layui-form-label">相机端口</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="camera_port" name="camera_port" autocomplete="off" class="layui-input"
+                           value="{{ camera_port }}"></div>
+            </div>
+            <div class="layui-form-item">
+                <label for="camera_type" class="layui-form-label">相机类型</label>
+                <div class="layui-input-inline">
+                    <select id="camera_type" name="camera_type" class="layui-input">
+                        <option value="海康" {% if camera_type == '海康' %}selected{% endif %}>海康</option>
+                        <option value="康耐视" {% if camera_type == '康耐视' %}selected{% endif %}>康耐视</option>
+                        <option value="奥普特" {% if camera_type == '奧普特' %}selected{% endif %}>奧普特</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">选择相机的型号</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label for="camera_position" class="layui-form-label">相机位置</label>
+                <div class="layui-input-inline">
+                    <select id="camera_position" name="camera_position" class="layui-input">
+                        <option value="IN" {% if camera_position == 'IN' %}selected{% endif %}>IN</option>
+                        <option value="OUT" {% if camera_position == 'OUT' %}selected{% endif %}>OUT</option>
+                        <option value="IN_L" {% if camera_position == 'IN_L' %}selected{% endif %}>IN_L</option>
+                        <option value="IN_R" {% if camera_position == 'IN_R' %}selected{% endif %}>IN_R</option>
+
+                        <option value="OUT_L" {% if camera_position == 'OUT_L' %}selected{% endif %}>OUT_L</option>
+                        <option value="OUT_R" {% if camera_position == 'OUT_R' %}selected{% endif %}>OUT_R</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">选择相机的位置</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label for="camera_agreement" class="layui-form-label">相机的协议</label>
+                <div class="layui-input-inline">
+                    <select id="camera_agreement" name="camera_agreement" class="layui-input">
+                        <option value="TCP" {% if camera_agreement == 'TCP' %}selected{% endif %}>TCP</option>
+                        <option value="UDP" {% if camera_agreement == 'UDP' %}selected{% endif %}>UDP</option>
+                        <option value="MODBUS_TCP" {% if camera_agreement == 'MODBUS_TCP' %}selected{% endif %}>
+                            MODBUS_TCP
+                        </option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">选择相机的协议</div>
+            </div>
+
+            <div class="layui-form-item">
+                <label for="L_repass" class="layui-form-label"></label>
+                <button class="layui-btn" lay-filter="add" lay-submit="">修改</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'layer', 'jquery'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var layer = layui.layer;
+
+        // Flask 渲染后传递的变量
+        var camera_id = "{{ camera_id }}";  // 确保这个变量在后端正确渲染
+        var update_camera_info_url = "{{ update_camera_info_url }}";  // 同样确保这个 URL 渲染正确
+
+        console.log("修养修改PM信息: ", machine_pm, update_camera_info_url);  // 输出查看传递的值
+
+        // 监听表单提交
+        form.on('submit(add)', function (data) {
+            // 发异步，把数据提交给服务器
+            data.field.camera_id = camera_id;  // 将 Flask 传递的 param_id 添加到表单数据中
+            var data_info = JSON.stringify(data.field);  // 转换为 JSON 格式
+
+            console.log('需要修改的内容:', data_info);  // 输出要提交的数据
+
+            // 使用 jQuery 的 $.ajax 发起 POST 请求
+            $.ajax({
+                url: update_camera_info_url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: data_info,
+                success: function (response) {
+                    console.log('Success:', response);
+
+                    layer.alert("修改成功", {
+                        icon: 6
+                    }, function () {
+                        xadmin.close(); // 关闭当前弹出层
+                        xadmin.father_reload(); // 关闭当前弹出层，并刷新父页面
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+
+                    layer.alert("修改失败，请重试！", {
+                        icon: 5
+                    }, function () {
+                        layer.closeAll(); // 关闭所有弹出层
+                    });
+                }
+            });
+            // 阻止表单默认提交行为
+            return false;
+        });
+    });
+</script>
+
+</body>
+
+</html>

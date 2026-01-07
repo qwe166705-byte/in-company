@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html class="x-admin-sm">
+
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-IPC</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <script type="text/javascript" src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<style>
+    /* 修改layui下拉菜单鼠标滑过项的背景色 */
+    
+    .layui-form-select dl dd:hover {
+        background-color: #009688;
+    }
+    /* 修改layui下拉菜单选中项的背景色 */
+    
+    .layui-form-select dl dd.layui-this {
+        background-color: #009688;
+    }
+</style>
+
+<body>
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <form class="layui-form">
+                <div class="layui-form-item">
+                    <label for="machine_name" class="layui-form-label">机台名称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="machine_name" name="machine_name" autocomplete="off" class="layui-input" value="{{ machine_name }}"></div>
+                    <div class="layui-form-mid layui-word-aux">机台的名称信息</div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="machine_ip" class="layui-form-label">PLC/LOG IP</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="machine_ip" name="machine_ip" autocomplete="off" class="layui-input" value="{{ machine_ip }}"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="machine_port" class="layui-form-label">端口</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="machine_port" name="machine_port" autocomplete="off" class="layui-input" value="{{ machine_port }}"></div>
+                    <div class="layui-form-mid layui-word-aux">纯数字、或空</div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="ipc_ip" class="layui-form-label">IPC IP</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="ipc_ip" name="ipc_ip" autocomplete="off" class="layui-input" value="{{ ipc_ip }}"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="terminal_id" class="layui-form-label">过站条码</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="terminal_id" name="terminal_id" autocomplete="off" class="layui-input" value="{{ terminal_id }}"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="source_name" class="layui-form-label">数据源</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="source_name" name="source_name" autocomplete="off" class="layui-input" value="{{ source_name }}"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="machine_type" class="layui-form-label">类型</label>
+                    <div class="layui-input-inline">
+                        <select id="machine_type" name="machine_type">
+            <option value="LOG" {% if machine_type == 'LOG' %}selected{% endif %}>LOG</option>
+            <option value="DB" {% if machine_type == 'DB' %}selected{% endif %}>DB</option>
+            <option value="前后相机" {% if machine_type == '前后相机' %}selected{% endif %}>前后相机</option>
+            <option value="前后相机DCN"  {% if machine_type == '前后相机DCN' %}selected{% endif %}>前后相机DCN</option>
+            <option value="前或后相机" {% if machine_type == '前或后相机' %}selected{% endif %}>前或后相机</option>
+            <option value="相机LOG" {% if machine_type == '相机LOG' %}selected{% endif %}>相机LOG</option>
+            <option value="AOBAO" {% if machine_type == 'AOBAO' %}selected{% endif %}>AOBAO</option>
+        </select>
+                    </div>
+                </div>
+            <div class="layui-form-item">
+                <label for="is_65_upload" class="layui-form-label">是否65上传</label>
+                <div class="layui-input-inline">
+                    <select id="is_65_upload" name="is_65_upload">
+                        <option value="True" {% if is_65_upload == 'True' %}selected{% endif %}>True</option>
+                        <option value="False" {% if is_65_upload == 'False' %}selected{% endif %}>False</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">True或者False</div>
+            </div>
+            <div class="layui-form-item">
+                <label for="is_upload_working_rate" class="layui-form-label">稼动率</label>
+                <div class="layui-input-inline">
+                    <select id="is_upload_working_rate" name="is_upload_working_rate">
+                        <option value="True" {% if is_upload_working_rate == 'True' %}selected{% endif %}>True</option>
+                        <option value="False" {% if is_upload_working_rate == 'False' %}selected{% endif %}>False</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">True或者False</div>
+            </div>
+                <div class="layui-form-item">
+                    <label for="data_cleaning_flag" class="layui-form-label">是否运算</label>
+                    <div class="layui-input-inline">
+                        <select id="data_cleaning_flag" name="data_cleaning_flag">
+                            <option value="True" {% if data_cleaning_flag == 'True' %}selected{% endif %}>True</option>
+                            <option value="False" {% if data_cleaning_flag == 'False' %}selected{% endif %}>False</option>
+            
+        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="read_interval" class="layui-form-label">间隔时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="read_interval" name="read_interval" autocomplete="off" class="layui-input" value="{{ read_interval }}"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="read_time_out" class="layui-form-label">运算超时</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="read_time_out" name="read_time_out" autocomplete="off" class="layui-input" value="{{ read_time_out }}"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="percentage" class="layui-form-label">时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="percentage" name="percentage" autocomplete="off" class="layui-input" value="{{ percentage }}"></div>
+                </div>
+                <div class="layui-form-item">
+                    <label for="L_repass" class="layui-form-label"></label>
+                    <button class="layui-btn" lay-filter="add" lay-submit="">修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        layui.use(['form', 'layer', 'jquery'], function() {
+            var $ = layui.jquery;
+            var form = layui.form;
+            var layer = layui.layer;
+
+            // Flask 渲染后传递的变量
+            var machine_pm = "{{ machine_pm }}"; // 确保这个变量在后端正确渲染
+            var update_machine_info_url = "{{ update_machine_info_url }}"; // 同样确保这个 URL 渲染正确
+
+            console.log("修养修改PM信息: ", machine_pm, update_machine_info_url); // 输出查看传递的值
+
+            // 监听表单提交
+            form.on('submit(add)', function(data) {
+                // 发异步，把数据提交给服务器
+                data.field.machine_pm = machine_pm; // 将 Flask 传递的 machine_pm 添加到表单数据中
+                var data_info = JSON.stringify(data.field); // 转换为 JSON 格式
+
+                console.log('需要修改的内容:', data_info); // 输出要提交的数据
+
+                // 使用 jQuery 的 $.ajax 发起 POST 请求
+                $.ajax({
+                    url: update_machine_info_url,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: data_info,
+                    success: function(response) {
+                        console.log('Success:', response);
+
+                        layer.alert("修改成功", {
+                            icon: 6
+                        }, function() {
+                            xadmin.close(); // 关闭当前弹出层
+                            xadmin.father_reload(); // 关闭当前弹出层，并刷新父页面
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+
+                        layer.alert("修改失败，请重试！", {
+                            icon: 5
+                        }, function() {
+                            layer.closeAll(); // 关闭所有弹出层
+                        });
+                    }
+                });
+                // 阻止表单默认提交行为
+                return false;
+            });
+        });
+    </script>
+
+</body>
+
+</html>

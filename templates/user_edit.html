@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html class="x-admin-sm">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-IPC</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <script type="text/javascript" src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]--></head>
+<style>
+    /* 修改layui下拉菜单鼠标滑过项的背景色 */
+    .layui-form-select dl dd:hover {
+        background-color: #009688;
+    }
+
+    /* 修改layui下拉菜单选中项的背景色 */
+    .layui-form-select dl dd.layui-this {
+        background-color: #009688;
+    }
+</style>
+<body>
+<div class="layui-fluid">
+    <div class="layui-row">
+        <form class="layui-form">
+            <div class="layui-form-item">
+                <label for="emp_no" class="layui-form-label">工号</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="emp_no" name="emp_no" value="{{ emp_no }}" autocomplete="off"
+                           class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="emp_name" class="layui-form-label">用户名称</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="emp_name" name="emp_name" autocomplete="off" class="layui-input"
+                           value="{{ emp_name }}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="machine_pm" class="layui-form-label">机台PM</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="machine_pm" name="machine_pm" autocomplete="off" class="layui-input"
+                           value="{{ machine_pm }}"></div>
+            </div>
+            <div class="layui-form-item">
+                <label for="machine_name" class="layui-form-label">机台名称</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="machine_name" name="machine_name" autocomplete="off" class="layui-input"
+                           value="{{ machine_name }}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="password" class="layui-form-label">密码</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="password" name="password" autocomplete="off" class="layui-input"
+                           value="{{ password }}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="authority" class="layui-form-label">用户权限</label>
+                <div class="layui-input-inline">
+                    <select id="authority" name="authority" class="layui-input">
+                        <option value="0" {% if authority == '0' %} selected {% endif %}>操作员</option>
+                        <option value="1" {% if authority == '1' %} selected {% endif %}>工程师</option>
+                        <option value="2" {% if authority == '2' %} selected {% endif %}>管理员</option>
+                        <option value="3" {% if authority == '3' %} selected {% endif %}>超级管理员</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label for="user_ip" class="layui-form-label">登录设备IP</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="user_ip" name="user_ip" autocomplete="off" class="layui-input"
+                           value="{{ user_ip }}"></div>
+            </div>
+            <div class="layui-form-item">
+                <label for="L_repass" class="layui-form-label"></label>
+                <button class="layui-btn" lay-filter="add" lay-submit="">修改</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    layui.use(['form', 'layer', 'jquery'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var layer = layui.layer;
+
+        // Flask 渲染后传递的变量
+        var emp_no = "{{ emp_no }}";  // 确保这个变量在后端正确渲染
+        var update_user_info_url = "{{ update_user_info_url }}";  // 同样确保这个 URL 渲染正确
+
+        console.log("修养修改PM信息: ", emp_no, update_user_info_url);  // 输出查看传递的值
+
+        // 监听表单提交
+        form.on('submit(add)', function (data) {
+            // 发异步，把数据提交给服务器
+            data.field.emp_no = emp_no;  // 将 Flask 传递的 param_id 添加到表单数据中
+            var data_info = JSON.stringify(data.field);  // 转换为 JSON 格式
+
+            console.log('需要修改的内容:', data_info);  // 输出要提交的数据
+
+            // 使用 jQuery 的 $.ajax 发起 POST 请求
+            $.ajax({
+                url: update_user_info_url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: data_info,
+                success: function (response) {
+                    console.log('Success:', response);
+
+                    layer.alert("修改成功", {
+                        icon: 6
+                    }, function () {
+                        xadmin.close(); // 关闭当前弹出层
+                        xadmin.father_reload(); // 关闭当前弹出层，并刷新父页面
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+
+                    layer.alert("修改失败，请重试！", {
+                        icon: 5
+                    }, function () {
+                        layer.closeAll(); // 关闭所有弹出层
+                    });
+                }
+            });
+            // 阻止表单默认提交行为
+            return false;
+        });
+    });
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 请求工具</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+
+        textarea {
+            height: 120px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #009688;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0a524b;
+        }
+
+        #response {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>WCF 端口测试</h1>
+
+    <div class="form-group">
+        <label for="command">command:</label>
+        <input type="text" id="command" name="command" maxlength="10" placeholder="例如: 65"/>
+    </div>
+
+    <div class="form-group">
+        <label for="emp_no">emp_no:</label>
+        <input type="text" id="emp_no" name="emp_no" maxlength="10" placeholder="例如: U2308583"/>
+    </div>
+
+    <div class="form - group">
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" placeholder="请输入消息message" rows="10" cols="50"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="image_byte">image_byte:</label>
+        <textarea id="image_byte" name="binaryData" placeholder="例如: b'null'" rows="4">b'null'</textarea>
+    </div>
+
+    <button onclick="sendRequest()">发送请求</button>
+
+    <div id="response"></div>
+</div>
+
+<script>
+    var server_url = "{{ server_url }}";
+    // 将 Unicode 编码的字符串转为中文
+    function decodeUnicode(str) {
+        return str.replace(/\\u[\dA-F]{4}/gi, function (match) {
+            return String.fromCharCode(parseInt(match.replace(/\\u/, ''), 16));
+        });
+    }
+
+    async function sendRequest() {
+        // 获取输入值
+        const command = document.getElementById('command').value;
+        const emp_no = document.getElementById('emp_no').value;
+        const message = document.getElementById('message').value;
+        const image_byte = document.getElementById('image_byte').value;
+
+        // 验证输入
+        if (!command || !message) {
+            alert('端口、和message不能为空！');
+            return;
+        }
+
+        // 构建请求的 JSON 数据
+        const requestData = {
+            command: parseInt(command),  // 端口应为数值类型
+            emp_no: emp_no,
+            message: message,
+            image_byte: image_byte || "b'null'"  // 默认值为 b'null'
+        };
+
+        try {
+            // 发送 POST 请求
+            const response = await fetch(server_url+'/mes/' + command, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+            // 获取响应内容并解码 Unicode 编码的字符串
+            const responseText = await response.text();
+            const decodedResponse = decodeUnicode(responseText);
+            document.getElementById('response').textContent = `响应状态: ${response.status}\n响应体: ${decodedResponse}`;
+        } catch (error) {
+            document.getElementById('response').textContent = `请求失败: ${error.message}`;
+        }
+    }
+</script>
+
+</body>
+</html>

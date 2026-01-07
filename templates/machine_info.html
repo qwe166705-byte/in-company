@@ -1,0 +1,562 @@
+﻿<!-- index.html -->
+<!DOCTYPE html>
+<html class="x-admin-sm">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎页面-IPC</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport"
+          content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi"/>
+    <link rel="stylesheet" href="../static/css/font.css">
+    <link rel="stylesheet" href="../static/css/xadmin.css">
+    <link rel="stylesheet" href="../static/css/icofont.min.css">
+    <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <script type="text/javascript" src="../static/js/xadmin.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <!--[if lt IE 9]>
+    <script src="https://cdn.staticfile.org/html5shiv/r29/html5.min.js"></script>
+    <script src="https://cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+
+    <![endif]-->
+
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body ">
+                    <form class="layui-form layui-col-space5" action="/machine_info" method="post">
+                        <div class="layui-inline layui-show-xs-block">
+                            <input type="text" name="machine_pm" id="machine_pm" placeholder="请输入机台编号"
+                                   value="{{ query_params['machine_pm'] or '' }}" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-inline layui-show-xs-block">
+                            <input type="text" name="machine_name" id="machine_name" placeholder="请输入机台名称"
+                                   value="{{ query_params['machine_name'] or '' }}" autocomplete="off"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-inline layui-show-xs-block">
+                            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i
+                                    class="layui-icon">&#xe615;</i></button>
+                        </div>
+                    </form>
+                </div>
+                <div class="layui-card-header">
+                    {% if g.authority == '3' %}
+                        <button class="layui-btn layui-btn-danger" onclick="delAll()"><i class="layui-icon"></i>批量删除
+                        </button>
+
+                        <button class="layui-btn layui-btn-danger" onclick="updateAll()"><i class="icofont-loop"
+                                                                                            style="font-size: 18px;"></i>批量更新
+                        </button>
+                    {% endif %}
+                    <button class="layui-btn" onclick="xadmin.open('新增机台','/machine_add',600,580)"><i
+                            class="layui-icon"></i>新增机台
+                    </button>
+                </div>
+                <div class="layui-card-body layui-table-body layui-table-main">
+                    <table class="layui-table layui-form">
+                        <thead>
+                        <tr>
+                            <th style="width: 0px;">
+                                <input type="checkbox" lay-filter="checkall" name="" lay-skin="primary">
+                            </th>
+                            <th style="width: 100px;">PM</th>
+                            <th>名称</th>
+                            <th>PLC/LOG IP</th>
+                            <th>端口</th>
+                            <th>IPC IP</th>
+                            <th>过站条码</th>
+                            <th>数据源</th>
+                            <th>类型</th>
+                            <th style="display: none;">是否运算</th>
+                            <th style="display: none;">间隔时间</th>
+                            <th style="display: none;">运算超时</th>
+                            <th style="display: none;">时间</th>
+                            <th>65上传</th>
+                            <th>稼动率</th>
+                            <th>版本信息</th>
+                            {% if g.authority == '3' or g.authority == '2' %}
+                                <th>状态</th>
+                            {% endif %}
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for value in machine_info %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="pm" value="{{ value['MACHINE_PM'] }}"
+                                           lay-skin="primary">
+                                </td>
+                                <td>
+                                    <!-- 添加小圆点，控制颜色 -->
+                                    <span class="circle-dot"
+                                          style="background-color: {% if value['API_STATUS'] == 'green' %}green{% elif value['API_STATUS'] == 'gray' %}gray{% else %}red{% endif %};"></span>
+                                    {% if value['MACHINE_PM'] is not none %}
+                                        {{ value['MACHINE_PM'] }}
+                                    {% else %}
+                                        {{ '' }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="circle-dot"
+                                          style="background-color: {% if value['LINK_STATUS'] == 'green' %}green{% elif value['LINK_STATUS'] == 'gray' %}gray{% else %}red{% endif %};"></span>
+                                    {% if value['MACHINE_NAME'] is not none %}{{ value['MACHINE_NAME'] }}{% else %}
+                                        {{ '' }}{% endif %}
+                                </td>
+                                <td>{% if value['MACHINE_IP'] is not none %}{{ value['MACHINE_IP'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['MACHINE_PORT'] is not none %}{{ value['MACHINE_PORT'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['IPC_IP'] is not none %}{{ value['IPC_IP'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['TERMINAL_ID'] is not none %}{{ value['TERMINAL_ID'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['SOURCE_NAME'] is not none %}{{ value['SOURCE_NAME'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['MACHINE_TYPE'] is not none %}{{ value['MACHINE_TYPE'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td style="display: none;">{% if value['DATA_CLEANING_FLAG'] is not none %}
+                                    {{ value['DATA_CLEANING_FLAG'] }}{% else %}{{ '' }}{% endif %}</td>
+                                <td style="display: none;">{% if value['READ_INTERVAL'] is not none %}{{ value['READ_INTERVAL'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td style="display: none;">{% if value['READ_TIME_OUT'] is not none %}{{ value['READ_TIME_OUT'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td style="display: none;">{% if value['PERCENTAGE'] is not none %}{{ value['PERCENTAGE'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['IS_65_UPLOAD'] is not none %}{{ value['IS_65_UPLOAD'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['IS_UPLOAD_WORKING_RATE'] is not none %}{{ value['IS_UPLOAD_WORKING_RATE'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                <td>{% if value['VERSION'] is not none %}{{ value['VERSION'] }}{% else %}
+                                    {{ '' }}{% endif %}</td>
+                                {% if g.authority == '3' or g.authority == '2' %}
+                                    <td class="td-status">
+                                        {% if value['STARTUP_STATUS'] == 'OK' %}
+                                            <!-- 启用按钮，绿色 -->
+                                            <a onclick="confirmAction(this, '{{ value['MACHINE_PM'] }}', '停用', '{{ value['IPC_IP'] }}')"
+                                               href="javascript:;" title="停用">
+                                                <span class="layui-btn layui-btn-mini">已启用</span>
+                                            </a>
+                                        {% else %}
+                                            <!-- 停用按钮，红色 -->
+                                            <a onclick="confirmAction(this, '{{ value['MACHINE_PM'] }}', '启用', '{{ value['IPC_IP'] }}')"
+                                               href="javascript:;" title="启用">
+                                                <span class="layui-btn layui-btn-danger layui-btn-mini">已停用</span>
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                                <td class="td-manage">
+                                    <a title="编辑" onclick="openEditModal(this)" href="javascript:;">
+                                        <i class="layui-icon" style="font-size: 18px;">&#xe642;</i>
+                                    </a>
+                                    {% if g.authority == '3' or g.authority == '2' %}
+                                        <a onclick="confirmUpdateSystem('{{ value['IPC_IP'] }}')" title="更新系统"
+                                           href="javascript:;">
+                                            <i class="icofont-loop" style="font-size: 18px;"></i>
+                                        </a>
+                                        {% if g.authority == '3' %}
+                                            <a title="删除" onclick="machine_del(this,'{{ value['MACHINE_PM'] }}')"
+                                               href="javascript:;">
+                                                <i class="layui-icon" style="font-size: 18px;">&#xe640;</i>
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                    <!-- <a title="日志" onclick="machine_logs(this,'{{ value['MACHINE_PM'] }}')"
+                                       href="javascript:;">
+                                        <i class="icofont-file-alt" style="font-size: 18px;"></i>
+                                    </a> -->
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="layui-card-body">
+                    <div class="page">
+                        <!-- 首页 -->
+                        <a class="first {% if current_page == 1 %}disabled{% endif %}"
+                           href="{{ url_for('machine_info', page=1) }}">首页</a>
+                        <!-- 上一页 -->
+                        <a class="prev {% if current_page == 1 %}disabled{% endif %}"
+                           href="{{ url_for('machine_info', page=current_page - 1) if current_page > 1 else '#' }}">&lt;&lt;</a>
+                        <!-- 当前页前后显示的页码范围 -->
+                        {% set show_pages = 5 %}
+                        {% set start_page = [1, current_page - show_pages // 2] | max %}
+                        {% set end_page = [total_pages, current_page + show_pages // 2] | min %}
+                        <!-- 如果当前页前面有省略号 -->
+                        {% if start_page > 1 %}
+                            <a class="num" href="{{ url_for('machine_info', page=1) }}">1</a>
+                            <span class="dots">...</span>
+                        {% endif %}
+                        <!-- 显示页码 -->
+                        {% for i in range(start_page, end_page + 1) %}
+                            {% if i == current_page %}
+                                <span class="current">{{ i }}</span>
+                            {% else %}
+                                <a class="num" href="{{ url_for('machine_info', page=i) }}">{{ i }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        <!-- 如果当前页后面有省略号 -->
+                        {% if end_page < total_pages %}
+                            <span class="dots">...</span>
+                            <a class="num" href="{{ url_for('machine_info', page=total_pages) }}">{{ total_pages }}</a>
+                        {% endif %}
+                        <!-- 下一页 -->
+                        <a class="next {% if current_page == total_pages %}disabled{% endif %}"
+                           href="{{ url_for('machine_info', page=current_page + 1) if current_page < total_pages else '#' }}">&gt;&gt;</a>
+                        <!-- 尾页 -->
+                        <a class="last {% if current_page == total_pages %}disabled{% endif %}"
+                           href="{{ url_for('machine_info', page=total_pages) }}">尾页</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .circle-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+</style>
+</body>
+<script>
+    var server_url = "{{ server_url }}";
+    layui.use(['laydate', 'form'], function () {
+        var laydate = layui.laydate;
+        var form = layui.form;
+
+
+        // 监听全选
+        form.on('checkbox(checkall)', function (data) {
+
+            if (data.elem.checked) {
+                $('tbody input').prop('checked', true);
+            } else {
+                $('tbody input').prop('checked', false);
+            }
+            form.render('checkbox');
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#start' //指定元素
+        });
+
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#end' //指定元素
+        });
+
+    });
+
+    function confirmAction(obj, machine_pm, action, ipc_ip) {
+        // 弹出确认框，确认是否启用或停用
+        layer.confirm('确定要' + action + '该设备吗？', {
+            btn: ['确认', '取消'], // 按钮
+            icon: 3, // 图标类型
+            title: '操作确认'
+        }, function () {
+            // 机台点击确认
+            if (action === '停用') {
+                console.log("停用");
+                machine_stop(obj, machine_pm, ipc_ip);  // 执行停用操作
+            } else if (action === '启用') {
+                console.log("启用");
+                machine_start(obj, machine_pm, ipc_ip);  // 执行启用操作
+            }
+            layer.closeAll();  // 关闭弹出框
+        }, function () {
+            // 机台点击取消，不做操作
+            layer.closeAll();  // 关闭弹出框
+        });
+    }
+
+    function machine_stop(obj, machine_pm, ipc_ip) {
+        console.log(machine_pm, 'http://' + ipc_ip + ':1234/stop_programs')
+        // 向后端发送请求，调用停止程序的 Flask API
+        $.ajax({
+            url: '/send_tcp_command',   // 后端停止 API 地址
+            type: 'POST',             // 请求方法
+            contentType: 'application/json',
+            data: JSON.stringify({
+                server_ip: ipc_ip, // 这里填写实际的文件路径
+                command: "关闭"  // 这里填写实际的命令
+            }),        // 期望返回的格式为 JSON
+            success: function (response) {
+                // 判断后端返回的结果并更新UI
+                if (response.message && response.message.includes('停止成功')) {
+                    // 如果停止成功，更新按钮状态
+                    $(obj).find('span').text('已停用').removeClass('layui-btn-normal').addClass('layui-btn-danger');
+                    $(obj).attr('onclick', "confirmAction(this, '" + machine_pm + "', '启用', '" + ipc_ip + "')");
+                } else {
+                    // 停止失败，弹出提示框
+                    alert('停止失败: ' + response.error);
+                }
+            },
+            error: function (xhr, status, error) {
+                // 请求失败时弹出错误信息
+                alert('请求失败: ' + error);
+            }
+        });
+    }
+
+
+    function machine_start(obj, machine_pm, ipc_ip) {
+        console.log(machine_pm, '/send_tcp_command')
+        // 向后端发送请求，调用 Flask API
+        $.ajax({
+            url: '/send_tcp_command',   // 后端 API 地址
+            type: 'POST',             // 请求方法
+            contentType: 'application/json',         // 期望返回的格式为 JSON
+            data: JSON.stringify({
+                server_ip: ipc_ip, // 这里填写实际的文件路径
+                command: "开启"  // 这里填写实际的命令
+            }), // 将数据转换为 JSON 格式
+            success: function (response) {
+                // 判断后端返回的结果并更新UI
+                if (response.message && response.message.includes('启动成功')) {
+                    // 如果启动成功，更新按钮状态
+                    $(obj).find('span').text('已启用').removeClass('layui-btn-danger').addClass('');
+                    $(obj).attr('onclick', "confirmAction(this, '" + machine_pm + "', '停用', '" + ipc_ip + "')");
+                } else {
+                    // 启动失败，弹出提示框
+                    alert('启动失败: ' + response.error);
+                }
+            },
+            error: function (xhr, status, error) {
+                // 请求失败时弹出错误信息
+                alert('请求失败: ' + error);
+            }
+        });
+    }
+
+
+    /*机台-删除*/
+    function machine_del(obj, pm) {
+        // 提示机台确认删除操作
+        layer.confirm('确认要删除吗？' + pm, {icon: 3}, function (index) {
+            // 禁用按钮，避免重复点击
+            $(obj).prop('disabled', true);
+
+            // 发异步请求删除数据
+            $.ajax({
+                url: server_url + '/del_machine_info',  // 假设后台删除接口
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify([pm]),  // 传递要删除的对象标识符
+                success: function (response) {
+                    // 如果删除成功
+                    if (response.message) {
+                        // 删除行
+                        $(obj).parents("tr").remove();
+                        layer.msg(response.message, {icon: 1, time: 1000});
+                    } else {
+                        // 如果删除失败，提示错误信息
+                        layer.msg(response.message, {icon: 2});
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 处理请求失败
+                    layer.msg('删除失败，请稍后再试', {icon: 2});
+                },
+                complete: function () {
+                    // 请求完成后重新启用按钮
+                    $(obj).prop('disabled', false);
+                }
+            });
+
+            // 关闭确认框
+            layer.close(index);
+        });
+    }
+
+
+    function delAll() {
+        var machine_pms = [];
+
+        // 获取选中的id，避免重复遍历
+        $('tbody input:checked').each(function () {
+            machine_pms.push($(this).val());
+        });
+
+        if (machine_pms.length === 0) {
+            layer.msg('请至少选择一项', {icon: 2});
+            return;
+        }
+        del_api(machine_pms);
+    }
+
+    function updateAll() {
+        var ipc_ips = [];
+
+        // 获取选中的行的第四个单元格的值
+        $('tbody input:checked').each(function () {
+            var row = $(this).closest('tr');  // 获取当前复选框所在的行
+            var fourthCellValue = row.find('td').eq(5).text();  // 获取第四个单元格的值 (索引从0开始)
+            ipc_ips.push(fourthCellValue);  // 将值添加到数组中
+        });
+
+        console.log('updateAll', ipc_ips);
+
+        // 如果没有选中任何项，则提示用户
+        if (ipc_ips.length === 0) {
+            layer.msg('请至少选择一项', {icon: 2});
+            return;
+        }
+
+        // 批量发送请求，不关心请求结果
+        ipc_ips.forEach(function (ipc_ip) {
+            // 构造请求参数
+            var requestData = {
+                server_ip: ipc_ip, // 这里填写实际的文件路径
+                command: "更新"  // 这里填写实际的命令
+            };
+            // 发起 AJAX 请求
+            $.ajax({
+                url: '/send_tcp_command', // 后端更新系统的接口
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(requestData), // 将数据转换为 JSON 格式
+                success: function (response) {
+                    console.log('更新成功', response);
+                },
+                error: function (xhr, status, error) {
+                    console.log('更新失败', error);
+                }
+            });
+        });
+
+        // 不等待请求完成，直接提示用户
+        layer.msg('已经通知IPC更新', {icon: 1});
+    }
+
+    function del_api(machine_pms) {
+        // 提示确认删除
+        layer.confirm('确认要删除吗？' + machine_pms.join(', '), {icon: 3}, function (index) {
+            // 禁用确认按钮，避免重复点击
+            layer.close(index);
+            layer.load(1);  // 显示加载层
+            console.log(server_url + '/del_machine_info')
+            // 发送删除请求
+            $.ajax({
+                url: server_url + '/del_machine_info', // 后端接口
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(machine_pms), // 转换为 JSON 格式
+                success: function (response) {
+                    // 请求成功处理
+                    if (response.message) {
+                        layer.msg(response.message, {icon: 1});
+                        // 删除选中的行
+                        $("tbody input:checked").each(function () {
+                            $(this).closest('tr').remove();
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // 请求失败处理
+                    var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "删除失败";
+                    layer.msg(errorMessage, {icon: 2});
+                },
+                complete: function () {
+                    // 请求完成后，隐藏加载层
+                    layer.closeAll('loading');
+                }
+            });
+        });
+    }
+
+    function openEditModal(editButton) {
+        console.log('openEditModal');
+
+        // 获取当前行
+        var row = editButton.closest('tr');
+
+        // 获取当前行的各列数据
+        var machine_pm = row.cells[1].innerText;
+        var machine_name = row.cells[2].innerText;
+        var machine_ip = row.cells[3].innerText;
+        var machine_port = row.cells[4].innerText;
+        var ipc_ip = row.cells[5].innerText;
+        var terminal_id = row.cells[6].innerText;
+        var source_name = row.cells[7].innerText;
+        var machine_type = row.cells[8].innerText;
+        var data_cleaning_flag = row.cells[9].innerText;
+        var read_interval = row.cells[10].innerText;
+        var read_time_out = row.cells[11].innerText;
+        var percentage = row.cells[12].innerText;
+        var is_65_upload = row.cells[13].innerText;
+        var is_upload_working_rate = row.cells[14].innerText;
+        var version = row.cells[15].innerText;
+
+        // 创建查询字符串，传递需要的数据
+        var url = '/machine_edit?' +
+            'machine_pm=' + encodeURIComponent(machine_pm) +
+            '&machine_name=' + encodeURIComponent(machine_name) +
+            '&machine_ip=' + encodeURIComponent(machine_ip) +
+            '&machine_port=' + encodeURIComponent(machine_port) +
+            '&ipc_ip=' + encodeURIComponent(ipc_ip) +
+            '&terminal_id=' + encodeURIComponent(terminal_id) +
+            '&source_name=' + encodeURIComponent(source_name) +
+            '&machine_type=' + encodeURIComponent(machine_type) +
+            '&data_cleaning_flag=' + encodeURIComponent(data_cleaning_flag) +
+            '&read_interval=' + encodeURIComponent(read_interval) +
+            '&read_time_out=' + encodeURIComponent(read_time_out) +
+            '&percentage=' + encodeURIComponent(percentage) +
+            '&is_65_upload=' + encodeURIComponent(is_65_upload) +
+            '&is_upload_working_rate=' + encodeURIComponent(is_upload_working_rate) +
+            '&version=' + encodeURIComponent(version);
+
+        console.log(url);
+
+        // 打开编辑页面并传递数据
+        xadmin.open('编辑', url, 600, 540);
+    }
+
+    function confirmUpdateSystem(ipc_ip) {
+        layer.confirm('确定要更新系统吗？', {
+            btn: ['确定', '取消'] // 按钮
+        }, function () {
+            // 点击"确定"按钮后发起更新请求
+            updateSystem(ipc_ip);
+        });
+    }
+
+    function updateSystem(ipc_ip) {
+        // 构造请求参数
+        var requestData = {
+            server_ip: ipc_ip, // 这里填写实际的文件路径
+            command: "更新"  // 这里填写实际的命令
+        };
+        // 发起 AJAX 请求
+        $.ajax({
+            url: '/send_tcp_command', // 后端更新系统的接口
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(requestData), // 将数据转换为 JSON 格式
+            success: function (response) {
+                // 请求成功，处理响应
+                if (response.message) {
+                    layer.msg(response.message, {icon: 1}); // 成功提示
+                }
+            },
+            error: function (xhr, status, error) {
+                // 请求失败，处理错误
+                var errorMessage = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : "系统更新失败";
+                layer.msg(errorMessage, {icon: 2}); // 失败提示
+            }
+        });
+    }
+</script>
+
+</html>
